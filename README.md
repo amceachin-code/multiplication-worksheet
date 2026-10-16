@@ -1,10 +1,12 @@
 # Times Table Worksheets
 
+**Use it online:** https://amceachin-code.github.io/multiplication-worksheet/
+
 A one-page web app that builds printable multiplication worksheets.
 
 ## Use it
 
-1. Open `index.html` in any browser (double-click it).
+1. Open the link above, or open `index.html` in any browser (double-click it).
 2. Set the times tables (`4`, `3, 4, 6`, or `2-5`), the range to multiply by, and the grid size.
 3. Click **Print worksheet**. Only the sheet prints, on letter paper.
 
