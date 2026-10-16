@@ -1,5 +1,38 @@
 # Progress
 
+## 2026-10-16 (phone keyboard and Mixed)
+
+### Changes
+
+- Phone keyboard fix, both pages. A friend on a phone couldn't type a comma or dash in the times table field. It had `inputmode="numeric"`, which shows the digit pad, and the iPhone digit pad has no comma, dash, or space.
+- The list fields (times tables on `index.html`, "Divide by" on `division/index.html`) no longer set `inputmode`, so phones show the regular keyboard. Tap "123" for digits and punctuation. They also set `autocorrect="off"`, `autocapitalize="off"`, and `spellcheck="false"`, so "2 to 5" isn't rewritten while typing. The single-number fields (from, to, per row, rows) keep the digit pad.
+- Parser (`parseNumberList`): ranges can use the word "to" in any case, with or without spaces ("2 to 5", "2to5", "2 To 5"). An em dash now works like a hyphen or en dash, since iPhones turn "--" into an em dash. Spaces already separated numbers like commas ("3 4 6"). Forms like "to 5", "2 to", "2 too 5", and "2 through 5" are refused with the format error.
+- Hint and error text on both pages now read "One or more, like 4, or 3 4 6, or 2 to 5" (was "like 4 or 3, 4, 6 or 2-5"). Commas and dashes still work.
+- Mixed: "Times-table number goes" on the times table page has a third choice, Mixed, after On top and On bottom (First, Second, and Mixed on the one-line layout). It is saved with the other settings.
+- New `WorksheetCore.mixOrder(problems, rand)`. After dealing, it flips exactly half (rounded down) of the problems whose two numbers differ, picked at random with the sheet's seed. Squares like 4 × 4 are left out of the count, because they look the same flipped. The answer key follows each flipped problem.
+- The same generator deals and then flips, so switching from On top to Mixed keeps the same problems in the same order and only turns half of them around.
+- The sheet code covers the printed numbers in order, so a Mixed sheet's code differs from the same sheet On top. That is correct, since their keys differ.
+- The segmented control (`.seg` in `worksheet.css`) now gives any number of choices equal columns. It was fixed at two. The division page's two-way Layout control looks the same.
+- Tests: 35 Node tests pass (was 33). New: `parseNumberList takes phone-friendly ranges: the word to, and an em dash` and `mixOrder flips exactly half the problems that can flip, keeping each product with its numbers`. The second checks the flipped count, that squares never flip, that each product travels with its numbers, that the input is untouched, that a seed repeats, and that an all-squares sheet is unchanged. The read-back sweep of 300 random sheets now includes Mixed times table sheets. Mutation counts are unchanged (857).
+- Browser checks: "2 to 5", "2 To 5", an em dash, and "3 4 6" all work, and "to 5" shows the error. Neither page's list field has `inputmode`. On a 4s sheet (1 to 10, 10 × 10), Mixed put the 4 first on exactly 45 of the 90 non-square problems, with the same facts in the same order as On top. Both layouts had 0 wrong answers with the key on, Print stayed on, and Mixed survived a reload. The three-way control fits on one line at 375 px phone width and in the 330 px desktop panel (its narrowest), with no sideways scroll. On the division page, the new hint shows, "2 to 5" gives "Dividing by 2–5", and the two-way control is unchanged.
+- Review pass (the user chose to apply it): one finding. Squares were counted toward the flipped half, which tipped the mix toward the top. Fixed as above.
+
+### Decisions
+
+- The full keyboard over other fixes. A phone pad has no comma or dash on iPhone, and neither does a tel pad. A row of tap buttons for 0 to 12 was offered as a later, bigger option. The user chose to start with the keyboard fix.
+- The hint shows "2 to 5" rather than "2-5", since it's easier to type on a phone. Dashes still work.
+- Mixed flips exactly half, not a coin flip per problem, so a sheet never comes out lopsided by chance.
+
+### Files touched
+
+- `index.html`, `division/index.html`, `worksheet-core.js`, `worksheet.css`, `tests/worksheet-core.test.js`, `tests/answer-key.test.js`, `README.md`, `TODO.md`, `PROGRESS.md`
+
+### Next steps
+
+- Commit and push.
+- Check the live pages on a phone (ideally the friend's iPhone): commas, dashes, and "to" can be typed in the list fields.
+- Still open: print on a real printer and from iPhone Safari and an Android phone.
+
 ## 2026-10-16 (times table layouts)
 
 ### Changes

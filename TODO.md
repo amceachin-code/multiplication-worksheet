@@ -81,8 +81,20 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - [x] Commit and push, then check the live times table page in both layouts with the key on.
 - [ ] Print a one-line sheet on a real printer and from phones.
 
+## 8. Phone keyboard and Mixed
+
+- [x] Full keyboard on phones for the list fields on both pages, so commas, dashes, and spaces can be typed. No autocorrect or auto caps.
+- [x] Ranges take the word "to" ("2 to 5", "2to5") and an em dash. The hint reads "like 4, or 3 4 6, or 2 to 5".
+- [x] Mixed choice for "Times-table number goes": exactly half the problems flip (squares don't count). Saved between visits.
+- [x] The segmented control takes any number of choices.
+- [x] Node tests: 35 pass, with the read-back sweep covering Mixed sheets.
+- [x] Browser checks on both pages, at phone width and in the desktop panel.
+- [x] Review pass.
+- [ ] Commit and push, then check typing commas, dashes, and "to" on a real phone (ideally the friend's iPhone).
+
 ## Later, maybe
 
 - [x] Answer key page (optional checkbox, prints after the worksheet).
 - [ ] MIT license file.
 - [ ] Long division with remainders, or room to show the work.
+- [ ] A row of tap buttons for 0 to 12 to pick times tables, instead of typing.

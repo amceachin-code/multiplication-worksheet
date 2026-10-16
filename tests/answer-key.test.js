@@ -169,7 +169,8 @@ test("verifySheets passes real sheets across hundreds of settings and seeds", ()
     const from = pick(0, 99), to = pick(from, Math.min(99, from + pick(0, 15)));
     const facts = op === "×" ? C.multiplicationFacts(nums, from, to, rand() < 0.5) : C.divisionFacts(nums, from, to);
     const cols = pick(1, op === "×" ? 15 : 10), rows = pick(1, 60), rowsPerPage = pick(1, rows);
-    const problems = deal(facts, cols * rows, pick(0, 2 ** 31));
+    const dealt = deal(facts, cols * rows, pick(0, 2 ** 31));
+    const problems = op === "×" && rand() < 0.5 ? C.mixOrder(dealt, rand) : dealt;   // "Mixed" sheets too
     const sheetPages = pagesFor(kind, problems, cols, rowsPerPage, false);
     assert.match(sheetPages[0].codes[0], /^[34679CDFHJKMNPRTVW]{4}$/);
     C.verifySheets({ ...kind, cols, rows, rowsPerPage }, sheetPages, pagesFor(kind, problems, cols, rowsPerPage, true));

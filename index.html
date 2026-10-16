@@ -66,9 +66,10 @@
       <fieldset>
         <legend>Facts</legend>
         <label for="tables">Times tables
-          <input id="tables" type="text" inputmode="numeric" autocomplete="off" value="4" aria-describedby="tables-msg">
+          <!-- Full keyboard on phones: the digit pad has no comma, dash, or space. -->
+          <input id="tables" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="4" aria-describedby="tables-msg">
         </label>
-        <span id="tables-msg" class="hint">One or more, like 4 or 3, 4, 6 or 2-5</span>
+        <span id="tables-msg" class="hint">One or more, like 4, or 3 4 6, or 2 to 5</span>
         <div class="pair">
           <label for="from">Multiply by, from
             <input id="from" type="number" inputmode="numeric" min="0" max="99" value="1">
@@ -104,6 +105,7 @@
         <div class="seg" role="radiogroup" aria-labelledby="pos-label">
           <label><input type="radio" name="pos" id="pos-top" value="top" checked><span id="pos-top-text">On top</span></label>
           <label><input type="radio" name="pos" id="pos-bottom" value="bottom"><span id="pos-bottom-text">On bottom</span></label>
+          <label><input type="radio" name="pos" id="pos-mixed" value="mixed"><span>Mixed</span></label>
         </div>
         <label for="title">Title (optional)
           <input id="title" type="text" autocomplete="off" placeholder="Multiplication: 4s">
@@ -137,15 +139,18 @@
 
   // Shared logic lives in worksheet-core.js (pure) and worksheet-ui.js (DOM).
   const C = window.WorksheetCore, UI = window.WorksheetUI, $ = UI.$;
-  const TABLES_HINT = "One or more, like 4 or 3, 4, 6 or 2-5";
+  const TABLES_HINT = "One or more, like 4, or 3 4 6, or 2 to 5";
   const TABLES_ERRORS = {
     empty: "Enter at least one times table, like 4.",
-    format: "Use whole numbers from 0 to 99, like 4 or 3, 4, 6 or 2-5."
+    format: "Use whole numbers from 0 to 99, like 4, or 3 4 6, or 2 to 5."
   };
   const MAX_COLS = 15;                        // hard cap; one-line problems may allow fewer
   // Grid each layout starts from when someone picks it: 10 x 10 stacked, and
   // 5 x 20 on one line (100 problems on a page either way, for 0 to 10 facts).
   const DEFAULT_GRID = { stacked: { cols: 10, rows: 10 }, horizontal: { cols: 5, rows: 20 } };
+
+  /** Where the table number goes: "top" (or first), "bottom" (or second), or "mixed". */
+  const readPos = () => ["top", "bottom", "mixed"].find((v) => $("pos-" + v).checked) || "top";
 
   /** The chosen layout, by the format name the answer key check knows it by. */
   const readFormat = () => ($("format-horizontal").checked ? "horizontal" : "stacked");
@@ -170,6 +175,7 @@
   };
 
   // On one line the table number comes first or second, not on top or bottom.
+  // Mixed reads the same either way.
   function labelPosition(format) {
     const oneLine = format === "horizontal";
     $("pos-top-text").textContent = oneLine ? "First" : "On top";
@@ -197,14 +203,20 @@
     // line up, and allow only as many per row as fit at 11 pt or more (fewer
     // for wide ones like 99 × 99 = 9801).
     const tables = parsed.error || !range ? null : parsed.numbers;
-    const facts = tables && C.multiplicationFacts(tables, range.from, range.to, $("pos-top").checked);
+    // Mixed builds the facts table-first, then flips half of them once dealt.
+    const pos = readPos();
+    const facts = tables && C.multiplicationFacts(tables, range.from, range.to, pos !== "bottom");
     const size = format === "stacked" ? C.STACKED_SIZE : facts && C.horizontalSize(facts);
     const maxCols = format === "horizontal" && size ? Math.min(MAX_COLS, C.maxColsFor(size.emPerCol)) : MAX_COLS;
     const grid = UI.readGrid(maxCols, maxCols < MAX_COLS ? "on one line with these numbers" : "");
     if (!facts || !grid) return "invalid";
 
     const total = grid.cols * grid.rows;
-    const problems = C.dealProblems(facts, total, C.mulberry32(seed));
+    // One generator for both steps, so switching to Mixed keeps the order and
+    // only flips half the problems.
+    const rand = C.mulberry32(seed);
+    const dealt = C.dealProblems(facts, total, rand);
+    const problems = pos === "mixed" ? C.mixOrder(dealt, rand) : dealt;
 
     const autoTitle = "Multiplication: " + C.listLabel(tables, "s");
     $("title").placeholder = autoTitle;
@@ -222,9 +234,9 @@
     storeKey: "times-table-worksheets:v1",
     fields: ["tables", "from", "to", "cols", "rows", "title"],
     render,
-    getExtra: () => ({ pos: $("pos-top").checked ? "top" : "bottom", format: readFormat() }),
+    getExtra: () => ({ pos: readPos(), format: readFormat() }),
     applyExtra: (d) => {
-      if (d.pos === "bottom") $("pos-bottom").checked = true;
+      if (d.pos === "bottom" || d.pos === "mixed") $("pos-" + d.pos).checked = true;
       if (d.format === "horizontal") $("format-horizontal").checked = true;
     }
   });

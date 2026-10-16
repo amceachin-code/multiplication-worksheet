@@ -63,13 +63,16 @@
   }
 
   /**
-   * Parse a list of whole numbers up to 99: "4", "3, 4, 6", or "2-5".
+   * Parse a list of whole numbers up to 99: "4", "3, 4, 6", "3 4 6", "2-5",
+   * or "2 to 5". Commas and spaces both separate numbers. A range can use a
+   * hyphen, an en or em dash (iPhones turn "--" into an em dash), or the word
+   * "to" in any case, which is easier than a dash on a phone keyboard.
    * Returns { numbers } sorted and unique, or { error } where error is
    * "empty", "format", or "below" (a number under `min`). Each page turns
    * the error code into its own wording.
    */
   function parseNumberList(str, min) {
-    const cleaned = String(str).replace(/\s*[-–]\s*/g, "-").trim();
+    const cleaned = String(str).replace(/\s*(?:[-\u2013\u2014]|to)\s*/gi, "-").trim();
     if (!cleaned) return { error: "empty" };
     const out = new Set();
     for (const tok of cleaned.split(/[,\s]+/).filter(Boolean)) {
@@ -92,6 +95,22 @@
     const facts = [];
     for (const t of tables) for (let m = from; m <= to; m++) facts.push(onTop ? [t, m, t * m] : [m, t, m * t]);
     return facts;
+  }
+
+  /**
+   * For the times table page's "Mixed" choice: dealt problems with exactly
+   * half (rounded down) of those that can flip turned around, so the table
+   * number is on the bottom (or second) in those and on top in the rest.
+   * Squares like 4 x 4 look the same either way, so they are left out of the
+   * count; counting them would tip the mix toward the top. Which ones flip is
+   * shuffled by `rand`, so a sheet never comes out all one way by chance.
+   * Flipped problems are new [b, a, product] arrays, so the product still
+   * travels with its numbers; the input is left as it was.
+   */
+  function mixOrder(problems, rand) {
+    const canFlip = problems.flatMap((p, i) => (p[0] !== p[1] ? [i] : []));
+    const flipped = new Set(shuffle(canFlip, rand).slice(0, Math.floor(canFlip.length / 2)));
+    return problems.map((p, i) => (flipped.has(i) ? [p[1], p[0], p[2]] : p));
   }
 
   /**
@@ -396,7 +415,7 @@
   }
 
   return {
-    GRID_H, STACKED_SIZE, mulberry32, parseNumberList, multiplicationFacts, divisionFacts,
+    GRID_H, STACKED_SIZE, mulberry32, parseNumberList, multiplicationFacts, mixOrder, divisionFacts,
     dealProblems, listLabel, longDivisionSize, horizontalSize, layout, maxColsFor, coverageText,
     checkAnswer, readWhole, pageSlices, sheetCode, verifySheets
   };

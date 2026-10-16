@@ -100,9 +100,10 @@
       <fieldset>
         <legend>Facts</legend>
         <label for="divisors">Divide by
-          <input id="divisors" type="text" inputmode="numeric" autocomplete="off" value="4" aria-describedby="divisors-msg">
+          <!-- Full keyboard on phones: the digit pad has no comma, dash, or space. -->
+          <input id="divisors" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="4" aria-describedby="divisors-msg">
         </label>
-        <span id="divisors-msg" class="hint">One or more, like 4 or 3, 4, 6 or 2-5</span>
+        <span id="divisors-msg" class="hint">One or more, like 4, or 3 4 6, or 2 to 5</span>
         <div class="pair">
           <label for="from">Answers from
             <input id="from" type="number" inputmode="numeric" min="0" max="99" value="1">
@@ -167,10 +168,10 @@
 
   // Shared logic lives in worksheet-core.js (pure) and worksheet-ui.js (DOM).
   const C = window.WorksheetCore, UI = window.WorksheetUI, $ = UI.$;
-  const DIVISORS_HINT = "One or more, like 4 or 3, 4, 6 or 2-5";
+  const DIVISORS_HINT = "One or more, like 4, or 3 4 6, or 2 to 5";
   const DIVISORS_ERRORS = {
     empty: "Enter at least one number to divide by, like 4.",
-    format: "Use whole numbers from 1 to 99, like 4 or 3, 4, 6 or 2-5.",
+    format: "Use whole numbers from 1 to 99, like 4, or 3 4 6, or 2 to 5.",
     below: "You can't divide by 0. Use numbers from 1 to 99."
   };
   const MAX_COLS = 10;                        // hard cap; very wide long division may allow fewer

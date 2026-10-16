@@ -13,6 +13,20 @@ test("parseNumberList accepts single numbers, lists, and ranges", () => {
   assert.deepEqual(C.parseNumberList("5-2, 3", 0), { numbers: [2, 3, 4, 5] });
 });
 
+test("parseNumberList takes phone-friendly ranges: the word to, and an em dash", () => {
+  // "to" is easier than a dash on a phone keyboard, and phones may capitalize it.
+  for (const s of ["2 to 5", "2to5", "2 To 5", "2 TO 5", "  2  to  5  ", "2\u20145", "2 \u2014 5"]) {
+    assert.deepEqual(C.parseNumberList(s, 0), { numbers: [2, 3, 4, 5] }, JSON.stringify(s));
+  }
+  assert.deepEqual(C.parseNumberList("3 4 6", 0), { numbers: [3, 4, 6] });
+  assert.deepEqual(C.parseNumberList("2 to 4, 9 to 10 12", 0), { numbers: [2, 3, 4, 9, 10, 12] });
+  // A range needs a number on each side, and "to" is the only word allowed.
+  for (const s of ["to 5", "2 to", "2 to to 5", "2 too 5", "2 through 5", "two to five"]) {
+    assert.deepEqual(C.parseNumberList(s, 0), { error: "format" }, JSON.stringify(s));
+  }
+  assert.deepEqual(C.parseNumberList("0 to 3", 1), { error: "below" });
+});
+
 test("parseNumberList reports blanks, junk, and numbers under the minimum", () => {
   assert.deepEqual(C.parseNumberList("  ", 0), { error: "empty" });
   assert.deepEqual(C.parseNumberList("four", 0), { error: "format" });
@@ -27,6 +41,34 @@ test("multiplicationFacts puts the table number on top or bottom, with the produ
   assert.deepEqual(C.multiplicationFacts([4], 1, 3, true), [[4, 1, 4], [4, 2, 8], [4, 3, 12]]);
   assert.deepEqual(C.multiplicationFacts([4], 1, 2, false), [[1, 4, 4], [2, 4, 8]]);
   assert.equal(C.multiplicationFacts([2, 3], 0, 12, true).length, 26);
+});
+
+test("mixOrder flips exactly half the problems that can flip, keeping each product with its numbers", () => {
+  // 4s and 7s from 1 to 12 include the squares 4 x 4 and 7 x 7, which look the same flipped.
+  const facts = C.multiplicationFacts([4, 7], 1, 12, true);
+  for (const total of [0, 1, 7, 24, 100]) {
+    const dealt = C.dealProblems(facts, total, C.mulberry32(total));
+    const before = structuredClone(dealt);
+    const mixed = C.mixOrder(dealt, C.mulberry32(99));
+    assert.deepEqual(dealt, before, "the dealt list is left as it was");
+    assert.equal(mixed.length, total);
+    const canFlip = dealt.filter(([a, b]) => a !== b).length;
+    const flipped = mixed.filter((p, i) => p !== dealt[i]);
+    assert.equal(flipped.length, Math.floor(canFlip / 2), `${total} problems`);
+    mixed.forEach((p, i) => {
+      if (p === dealt[i]) return;
+      assert.notEqual(dealt[i][0], dealt[i][1], "a square was flipped");
+      assert.deepEqual(p, [dealt[i][1], dealt[i][0], dealt[i][2]]);
+      assert.equal(p[0] * p[1], p[2]);
+    });
+  }
+  // A sheet of only squares has nothing to flip.
+  const squares = [[3, 3, 9], [5, 5, 25]];
+  assert.deepEqual(C.mixOrder(squares, C.mulberry32(1)), squares);
+  // Repeatable for a seed, so editing the title doesn't change the sheet.
+  const dealt = C.dealProblems(facts, 40, C.mulberry32(5));
+  assert.deepEqual(C.mixOrder(dealt, C.mulberry32(8)), C.mixOrder(dealt, C.mulberry32(8)));
+  assert.notDeepEqual(C.mixOrder(dealt, C.mulberry32(8)), C.mixOrder(dealt, C.mulberry32(9)));
 });
 
 test("divisionFacts makes whole-number facts with no remainders", () => {

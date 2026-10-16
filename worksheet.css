@@ -140,12 +140,14 @@ label.switch { flex-direction: row; align-items: center; gap: 10px; cursor: poin
 .switch input:checked { background: var(--text); border-color: var(--text); }
 .switch input:checked::before { background: var(--surface); transform: translateX(16px); }
 
-/* Two-choice segmented control (radio buttons drawn as one bar), like the
-   Layout choice on both pages and the times table page's "Times-table number goes". */
+/* Segmented control (radio buttons drawn as one bar), like the Layout choice
+   on both pages (two options) and the times table page's "Times-table number
+   goes" (three). Every option gets an equal share of the width. */
 .seg-caption { font-size: 0.9rem; }
 .seg {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   border: 1px solid var(--line);
   border-radius: 6px;
   overflow: hidden;
