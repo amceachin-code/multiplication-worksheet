@@ -1,5 +1,40 @@
 # Progress
 
+## 2026-10-16 (answer key)
+
+### Changes
+
+- Added an Answer key switch to both pages. With it on, printing gives all worksheet pages, then matching key pages in the same order. Key pages replace the Name and Date line with an "Answer key" label; answers print in bold black (times tables under the rule, right-aligned; division on the blank line, which does not move).
+- Every worksheet and key page shows a 4-character sheet code (digits and consonants, no look-alikes, no vowels) computed from the operation, grid width, page split, and every problem in order, so a key can be matched to its sheet.
+- Accuracy design: answers are made once with their facts (times table facts are now `[top, bottom, product]`); one dealt list feeds both the worksheet and the key; before anything goes on screen, the page reads its own text back and `WorksheetCore.verifySheets` checks every problem (same numbers in the same spots, each answer right for the printed numbers, no answers on the worksheet, matching codes, same grid). It fails closed: a failed key is left out and Print turns off; a failed worksheet shows nothing. Unchecked pages never enter the page, so no print path can reach them.
+- A `beforeprint` handler draws any pending change first, so Cmd+P right after typing prints the current settings. While a setting is invalid, the last good sheet is dimmed and hidden from print.
+- New core functions: `checkAnswer`, `readWhole`, `pageSlices`, `sheetCode`, `verifySheets`.
+- Tests: 29 Node tests pass. New `tests/answer-key.test.js` checks all 20,000 times table facts (0 to 99 by 0 to 99, both orders) by repeated addition and all 9,900 division facts by repeated subtraction, checks that `checkAnswer` rejects every answer plus or minus 1, passes 300 random real sheets, and makes 425 single-change mutations (wrong, blank, or look-alike answers; swapped, missing, or extra problems and pages; another shuffle's key; different splits or columns; bad codes; stray text; division by 0) that `verifySheets` must reject.
+- Browser checks: a scripted sweep of 99 runs and 24,099 answers on both pages, at 1 to 5 pages, in Andika, Avenir Next, and Verdana Bold (a deliberately wide font). Every answer was right, stayed in its own cell, and cleared its rule or line (times table digits by at least 0.27 em, division digits by at least 0.11 em). Lines did not move between worksheet and key. Seven deliberate faults (wrong product, key reversed, key split differently, bad code, answer leaked onto the worksheet, stray text, a crash while building) each withheld the key or the whole sheet.
+- Print checks: four PDFs from headless Chrome (one-page and three-page sheets on each page). All 760 printed answers recomputed correctly from `pdftotext` output, with worksheet pages first and key pages after. With the page's own check switched off and a wrong answer planted, the PDF check still caught it.
+- Review pass: removed an unused class, built the page label once, trimmed repeated hint text, simplified a test helper, dealt facts directly instead of through indices (proven identical across 5,000 sheets, so saved seeds keep their problems), and dropped a redundant redraw after fonts load.
+- Regenerated `og-image.png` and `division/og-image.png` (1200x630, light mode), since the panel gained the switch.
+
+### Decisions
+
+- The switch starts off on every visit and is not saved, so nobody prints a key by accident.
+- Two-sided printing would put a one-page key on the back of the worksheet. Chose a hint under the switch ("Print one-sided, or the key lands on the back of the worksheet.") over a blank padding page.
+- The sheet code shows on every worksheet, even with the key off, so a key printed later can be matched.
+- Answers are bold black, not colored, so keys print clearly in black and white.
+- Fail closed: a missing key is acceptable; a wrong one is not.
+- The approved plan lives in `PROJECTPLAN.md` and local task tracking in `tasks/`. Both stay local and are gitignored.
+
+### Files touched
+
+- `worksheet-core.js`, `worksheet-ui.js`, `worksheet.css`, `index.html`, `division/index.html`, `tests/worksheet-core.test.js`, `tests/answer-key.test.js` (new), `.gitignore`, `og-image.png`, `division/og-image.png`, `README.md`, `TODO.md`, `PROGRESS.md`
+
+### Next steps
+
+- Commit and push after review, then check both live pages with the key on.
+- Print a sheet and key on a real printer, and from iPhone Safari and an Android phone.
+- Maybe mention answer keys on the Students & Guardians tools page in `academic-site`.
+
+
 ## 2026-10-15 (division)
 
 ### Changes

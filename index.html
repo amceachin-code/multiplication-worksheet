@@ -60,6 +60,16 @@
   border-bottom: 0.08em solid var(--ink);
   padding-bottom: 0.05em;
 }
+/* The answer spot under the rule: empty on the worksheet, filled on the answer
+   key. Rows already leave room for it, so nothing moves. Flex end keeps the
+   answer under the ones digits; if a wide fallback font makes 9801 wider than
+   the problem, it spills left into the cell's spare room, not into a neighbor. */
+.prob .ans {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.12em;
+  font-weight: 700;
+}
 </style>
 </head>
 <body>
@@ -112,6 +122,12 @@
         <label for="title">Title (optional)
           <input id="title" type="text" autocomplete="off" placeholder="Multiplication: 4s">
         </label>
+        <!-- Not saved between visits, so nobody prints a key by accident. -->
+        <label class="switch" for="answer-key">
+          <input id="answer-key" type="checkbox" role="switch" autocomplete="off" aria-describedby="answer-key-hint">
+          <span>Answer key</span>
+        </label>
+        <span id="answer-key-hint" class="hint">Print one-sided, or the key lands on the back of the worksheet.</span>
       </fieldset>
     </form>
 
@@ -120,7 +136,7 @@
     <div class="actions">
       <button type="button" class="btn-print" id="print">Print worksheet</button>
       <button type="button" class="btn-shuffle" id="shuffle">Shuffle again</button>
-      <p class="print-note">Prints the worksheet only, on letter paper. Each shuffle makes a new order.</p>
+      <p class="print-note">Prints on letter paper: the worksheet, then the answer key if it's on. Each shuffle makes a new order.</p>
     </div>
   </aside>
 
@@ -143,11 +159,15 @@
   // Room one stacked problem needs, in em: width, and height plus space for the answer.
   const SIZE = { emPerCol: 3.4, emPerRow: 4.6, maxFont: 26 };
 
-  function buildProblem([a, b]) {
+  // One stacked problem: the top number, then × and the bottom number over a
+  // rule, then the answer spot. The product prints only on answer key pages
+  // (showAnswer must be exactly true, so a stray argument can't leak answers).
+  // data-part marks each piece so the answer key check can read it back.
+  function buildProblem([a, b, product], showAnswer) {
     const p = UI.el("div", "prob");
     const n2 = UI.el("div", "n2");
-    n2.append(UI.el("span", "x", "×"), UI.el("span", "", String(b)));
-    p.append(UI.el("div", "n1", String(a)), n2);
+    n2.append(UI.part("span", "x", "sign", "×"), UI.part("span", "", "b", String(b)));
+    p.append(UI.part("div", "n1", "a", String(a)), n2, UI.part("div", "ans", "answer", showAnswer === true ? String(product) : ""));
     return p;
   }
 
@@ -157,23 +177,22 @@
     UI.setMsg($("tables-msg"), parsed.error ? TABLES_ERRORS[parsed.error] : TABLES_HINT, !!parsed.error, [$("tables")]);
     const range = UI.readRange();
     const grid = UI.readGrid(15);
-    if (parsed.error || !range || !grid) return false;
+    if (parsed.error || !range || !grid) return "invalid";
 
     const tables = parsed.numbers;
     const facts = C.multiplicationFacts(tables, range.from, range.to, $("pos-top").checked);
     const total = grid.cols * grid.rows;
-    const problems = C.dealProblems(facts.map((_, i) => i), total, C.mulberry32(seed)).map((i) => facts[i]);
+    const problems = C.dealProblems(facts, total, C.mulberry32(seed));
 
     const autoTitle = "Multiplication: " + C.listLabel(tables, "s");
     $("title").placeholder = autoTitle;
-    UI.renderSheets({
-      problems, factCount: facts.length, cols: grid.cols, rows: grid.rows,
+    return UI.renderSheets({
+      op: "×", problems, factCount: facts.length, cols: grid.cols, rows: grid.rows,
       layout: C.layout(grid.cols, grid.rows, SIZE),
       title: $("title").value.trim() || autoTitle,
       rangeText: "× " + range.from + " to " + range.to,
       buildProblem
     });
-    return true;
   }
 
   UI.start({

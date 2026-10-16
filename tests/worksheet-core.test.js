@@ -21,9 +21,9 @@ test("parseNumberList reports blanks, junk, and numbers under the minimum", () =
   assert.deepEqual(C.parseNumberList("3-0", 1), { error: "below" });
 });
 
-test("multiplicationFacts puts the table number on top or bottom", () => {
-  assert.deepEqual(C.multiplicationFacts([4], 1, 3, true), [[4, 1], [4, 2], [4, 3]]);
-  assert.deepEqual(C.multiplicationFacts([4], 1, 2, false), [[1, 4], [2, 4]]);
+test("multiplicationFacts puts the table number on top or bottom, with the product", () => {
+  assert.deepEqual(C.multiplicationFacts([4], 1, 3, true), [[4, 1, 4], [4, 2, 8], [4, 3, 12]]);
+  assert.deepEqual(C.multiplicationFacts([4], 1, 2, false), [[1, 4, 4], [2, 4, 8]]);
   assert.equal(C.multiplicationFacts([2, 3], 0, 12, true).length, 26);
 });
 
@@ -49,6 +49,23 @@ test("dealProblems is repeatable for a seed and safe with no facts", () => {
   const ids = [...Array(12).keys()];
   assert.deepEqual(C.dealProblems(ids, 30, C.mulberry32(9)), C.dealProblems(ids, 30, C.mulberry32(9)));
   assert.deepEqual(C.dealProblems([], 5, C.mulberry32(9)), []);
+});
+
+test("dealProblems deals facts directly, the same as dealing their indices", () => {
+  // The pages used to deal indices and map them back to facts. Dealing the
+  // facts themselves must give the very same sheet, so saved seeds keep their problems.
+  const sets = [
+    C.multiplicationFacts([3, 4, 6], 0, 12, true), C.multiplicationFacts([7], 1, 10, false),
+    C.divisionFacts([2, 9], 0, 12), C.multiplicationFacts([5], 4, 4, true)
+  ];
+  for (const facts of sets) {
+    for (const seed of [1, 42, 2026, 4294967295]) {
+      const viaIndex = C.dealProblems(facts.map((_, i) => i), 100, C.mulberry32(seed)).map((i) => facts[i]);
+      const direct = C.dealProblems(facts, 100, C.mulberry32(seed));
+      assert.equal(direct.length, 100);
+      direct.forEach((fact, k) => assert.equal(fact, viaIndex[k]));   // the same fact, answer included
+    }
+  }
 });
 
 test("listLabel reads naturally with and without a suffix", () => {
@@ -78,6 +95,24 @@ test("layout keeps default sheets on one page and splits tall ones", () => {
   const div = C.layout(4, 10, { emPerCol: divEm, emPerRow: 2.6, maxFont: 24 });
   assert.equal(div.pages, 1);
   assert.ok(div.font >= 14);
+});
+
+test("pageSlices puts every problem on exactly one page, in order", () => {
+  const problems = [...Array(54).keys()];
+  const pages = C.pageSlices(problems, 6, 4);
+  assert.deepEqual(pages.map((p) => p.length), [24, 24, 6]);
+  assert.deepEqual(pages.flat(), problems);
+  assert.deepEqual(C.pageSlices(problems.slice(0, 48), 6, 4).map((p) => p.length), [24, 24]);
+  assert.throws(() => C.pageSlices(problems, 0, 4), RangeError);
+});
+
+test("pageSlices makes as many pages as layout says", () => {
+  const times = { emPerCol: 3.4, emPerRow: 4.6, maxFont: 26 };
+  for (const [cols, rows] of [[10, 10], [12, 40], [15, 60], [1, 1], [7, 33]]) {
+    const L = C.layout(cols, rows, times);
+    const pages = C.pageSlices([...Array(cols * rows).keys()], cols, L.rowsPerPage);
+    assert.equal(pages.length, L.pages, `${cols} x ${rows}`);
+  }
 });
 
 test("coverageText describes how often facts repeat", () => {

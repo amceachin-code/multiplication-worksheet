@@ -108,6 +108,37 @@ input[aria-invalid="true"] { border-color: var(--error); }
 .hint { font-size: 0.82rem; color: var(--muted); }
 .err { font-size: 0.82rem; color: var(--error); }
 
+/* Answer key switch: a checkbox drawn as an on/off switch. Colors follow the
+   times table page's segmented control: field color when off, text color when on. */
+label.switch { flex-direction: row; align-items: center; gap: 10px; cursor: pointer; }
+.switch input {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: none;
+  position: relative;
+  width: 40px;
+  height: 24px;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--field);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.switch input::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: transform 0.15s;
+}
+.switch input:checked { background: var(--text); border-color: var(--text); }
+.switch input:checked::before { background: var(--surface); transform: translateX(16px); }
+
 .summary {
   font-size: 0.88rem;
   color: var(--muted);
@@ -146,6 +177,9 @@ button {
   min-width: 0;
 }
 .sheet-wrap { width: min(100%, 760px); container-type: inline-size; }
+/* While a setting needs fixing, the last good sheet stays up but dimmed, and it
+   won't print (see the print rules below), matching the disabled Print button. */
+.preview.stale .sheet-wrap { opacity: 0.4; }
 .page-label {
   font-size: 0.78rem;
   letter-spacing: 0.06em;
@@ -187,6 +221,16 @@ button {
 .ws-field.name { flex: 1 1 auto; }
 .ws-field.date { flex: 0 0 calc(var(--in) * 2.4); }
 .ws-field .blank { flex: 1; border-bottom: calc(var(--in) * 0.01) solid var(--ink); height: 1.1em; }
+/* Answer key pages put this label where Name and Date go. */
+.ws-key-label { align-self: flex-end; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+/* The sheet code matches a key to its worksheet: small, at the right end of the line. */
+.ws-code {
+  align-self: flex-end;
+  margin-left: auto;
+  font-size: calc(var(--in) * 10 / 72);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
 .ws-title {
   display: flex;
   justify-content: space-between;
@@ -224,6 +268,7 @@ button {
   .panel, .page-label { display: none !important; }
   .app { display: block; min-height: 0; }
   .preview { display: block; padding: 0; }
+  .preview.stale { display: none; }
   .sheet-wrap { width: 8.5in; container-type: normal; }
   .paper {
     --in: 1in;

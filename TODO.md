@@ -5,7 +5,9 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 ## Current state
 
 - `index.html` (times tables) and `division/index.html` share `worksheet.css`, `worksheet-core.js`, and `worksheet-ui.js`. No build step.
+- Both pages can print an answer key. With the Answer key switch on, key pages print after the worksheet pages, and a sheet code matches each key to its sheet.
 - Tested in headless Chrome: default settings (4s, ×1 to 10, 10×10) print on one letter page. 250 problems across 3 tables split onto 3 pages. Each fact appears equally often, with no back-to-back repeats.
+- Node tests live in two files: `tests/worksheet-core.test.js` and `tests/answer-key.test.js`.
 - Fonts (Andika, Atkinson Hyperlegible) load from Google Fonts. Offline, the page falls back to system fonts.
 - Live at https://www.andrew-mceachin.com/multiplication-worksheet/ (public repo `amceachin-code/multiplication-worksheet`, Pages from `main` root).
 - Link previews use `og-image.png`, a 1200x630 light-mode screenshot of the page. Regenerate it if the layout changes.
@@ -42,7 +44,19 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - [x] Add the tool to the Students & Guardians page in `academic-site`.
 - [ ] Push both repos and check https://www.andrew-mceachin.com/multiplication-worksheet/division/ and https://www.andrew-mceachin.com/tools/
 
+## 5. Answer key
+
+- [x] Add an Answer key switch to both pages. It starts off on every visit.
+- [x] Read-back check of every page before it shows. It fails closed: a failed key is left out, and a failed worksheet shows nothing.
+- [x] Sheet code on every worksheet and key page, so a key can be matched to its sheet.
+- [x] Node tests for every fact plus 425 single-change mutations (`tests/answer-key.test.js`).
+- [x] Browser sweep of both pages, plus seven fault tests.
+- [x] PDF read-back check: printed answers recomputed from `pdftotext` output.
+- [ ] Commit and push, then check both live pages with the key on.
+- [ ] Print a sheet and key on a real printer.
+- [ ] Print from iPhone Safari and an Android phone.
+
 ## Later, maybe
 
-- [ ] Answer key page (optional checkbox, prints after the worksheet).
+- [x] Answer key page (optional checkbox, prints after the worksheet).
 - [ ] MIT license file.

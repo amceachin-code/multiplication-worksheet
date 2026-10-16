@@ -36,7 +36,21 @@
 }
 .prob .num { text-align: right; }
 .prob .sign { text-align: center; }
-.prob .blank { border-bottom: 0.07em solid var(--ink); height: 1em; margin-left: 0.15em; }
+.prob .blank { position: relative; border-bottom: 0.07em solid var(--ink); height: 1em; margin-left: 0.15em; }
+/* The answer spot, inside the blank: empty on the worksheet, filled on the
+   answer key. It is positioned absolutely so it never becomes the blank's
+   baseline; an empty blank lines its bottom edge up with the numbers, and text
+   inside it would drop the line. This way the line sits exactly where the
+   worksheet has it. */
+.prob .ans {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.08em;
+  text-align: center;
+  line-height: 1;
+  font-weight: 700;
+}
 </style>
 </head>
 <body>
@@ -85,6 +99,12 @@
         <label for="title">Title (optional)
           <input id="title" type="text" autocomplete="off" placeholder="Dividing by 4">
         </label>
+        <!-- Not saved between visits, so nobody prints a key by accident. -->
+        <label class="switch" for="answer-key">
+          <input id="answer-key" type="checkbox" role="switch" autocomplete="off" aria-describedby="answer-key-hint">
+          <span>Answer key</span>
+        </label>
+        <span id="answer-key-hint" class="hint">Print one-sided, or the key lands on the back of the worksheet.</span>
       </fieldset>
     </form>
 
@@ -93,7 +113,7 @@
     <div class="actions">
       <button type="button" class="btn-print" id="print">Print worksheet</button>
       <button type="button" class="btn-shuffle" id="shuffle">Shuffle again</button>
-      <p class="print-note">Prints the worksheet only, on letter paper. Each shuffle makes a new order.</p>
+      <p class="print-note">Prints on letter paper: the worksheet, then the answer key if it's on. Each shuffle makes a new order.</p>
     </div>
   </aside>
 
@@ -119,13 +139,17 @@
   const MAX_FONT = 24;
   const MAX_COLS = 8;                         // hard cap; narrower problems may allow fewer
 
-  // One problem reads "24 ÷ 4 = ____". The quotient is never printed.
-  function buildProblem([dividend, divisor]) {
+  // One problem reads "24 ÷ 4 = ____". The quotient prints on the line only on
+  // answer key pages (showAnswer must be exactly true, so a stray argument can't
+  // leak answers). data-part marks each piece so the answer key check can read it back.
+  function buildProblem([dividend, divisor, quotient], showAnswer) {
     const p = UI.el("div", "prob");
+    const blank = UI.el("span", "blank");
+    blank.append(UI.part("span", "ans", "answer", showAnswer === true ? String(quotient) : ""));
     p.append(
-      UI.el("span", "num", String(dividend)), UI.el("span", "sign", "÷"),
-      UI.el("span", "num", String(divisor)), UI.el("span", "sign", "="),
-      UI.el("span", "blank")
+      UI.part("span", "num", "a", String(dividend)), UI.part("span", "sign", "sign", "÷"),
+      UI.part("span", "num", "b", String(divisor)), UI.part("span", "sign", "sign", "="),
+      blank
     );
     return p;
   }
@@ -141,23 +165,22 @@
     const widths = facts && C.divisionWidths(facts);
     const maxCols = widths ? Math.min(MAX_COLS, C.maxColsFor(widths.total + COL_GUTTER_EM)) : MAX_COLS;
     const grid = UI.readGrid(maxCols, maxCols < MAX_COLS ? "with these numbers" : "");
-    if (!facts || !grid) return false;
+    if (!facts || !grid) return "invalid";
 
     const divisors = parsed.numbers;
     const total = grid.cols * grid.rows;
-    const problems = C.dealProblems(facts.map((_, i) => i), total, C.mulberry32(seed)).map((i) => facts[i]);
+    const problems = C.dealProblems(facts, total, C.mulberry32(seed));
 
     const autoTitle = "Dividing by " + C.listLabel(divisors, "");
     $("title").placeholder = autoTitle;
-    UI.renderSheets({
-      problems, factCount: facts.length, cols: grid.cols, rows: grid.rows,
+    return UI.renderSheets({
+      op: "÷", problems, factCount: facts.length, cols: grid.cols, rows: grid.rows,
       layout: C.layout(grid.cols, grid.rows, { emPerCol: widths.total + COL_GUTTER_EM, emPerRow: EM_PER_ROW, maxFont: MAX_FONT }),
       title: $("title").value.trim() || autoTitle,
       rangeText: "Answers " + range.from + " to " + range.to,
       buildProblem,
       gridVars: { "--cols": widths.cols.map((w) => w.toFixed(3) + "em").join(" ") }
     });
-    return true;
   }
 
   UI.start({
