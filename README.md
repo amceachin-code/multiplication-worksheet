@@ -1,6 +1,6 @@
 # Times Table Worksheets
 
-**Use it online:** https://amceachin-code.github.io/multiplication-worksheet/
+**Use it online:** https://www.andrew-mceachin.com/multiplication-worksheet/
 
 A one-page web app that builds printable multiplication worksheets.
 

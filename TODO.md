@@ -7,7 +7,7 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - `index.html` is a single self-contained page (HTML, CSS, JS in one file). No build step.
 - Tested in headless Chrome: default settings (4s, ×1 to 10, 10×10) print on one letter page. 250 problems across 3 tables split onto 3 pages. Each fact appears equally often, with no back-to-back repeats.
 - Fonts (Andika, Atkinson Hyperlegible) load from Google Fonts. Offline, the page falls back to system fonts.
-- Live at https://amceachin-code.github.io/multiplication-worksheet/ (public repo `amceachin-code/multiplication-worksheet`, Pages from `main` root).
+- Live at https://www.andrew-mceachin.com/multiplication-worksheet/ (public repo `amceachin-code/multiplication-worksheet`, Pages from `main` root).
 - Link previews use `og-image.png`, a 1200x630 light-mode screenshot of the page. Regenerate it if the layout changes.
 - The page collects nothing. Settings live only in the visitor's localStorage. The one outside request is Google Fonts, which sees the visitor's IP like any font CDN.
 
@@ -22,7 +22,7 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 
 - [x] Serve from `main`, root folder: `gh api -X POST repos/amceachin-code/multiplication-worksheet/pages -f "source[branch]=main" -f "source[path]=/"`
 - [x] Wait for the first build: `gh api repos/amceachin-code/multiplication-worksheet/pages/builds/latest`
-- [ ] Open https://amceachin-code.github.io/multiplication-worksheet/ and confirm the sheet renders and Print works.
+- [ ] Open https://www.andrew-mceachin.com/multiplication-worksheet/ and confirm the sheet renders and Print works.
 - [x] Add the live link to the top of `README.md` and to the repo's "Website" field.
 
 ## 3. Get it ready to share with other families
