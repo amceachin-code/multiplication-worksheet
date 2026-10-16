@@ -33,6 +33,16 @@
   const LONG_EM_PER_ROW = 3.6;                // answer line, bar, dividend, then air before the next row
   const LONG_MAX_FONT = 24;
 
+  // One-line times table sizes, in em, like "4 × 7 = ___". The page's styles
+  // (.horiz in index.html) get the column widths and the sign padding from
+  // horizontalSize as CSS variables, so the two can't drift apart.
+  const H_SIGN_PAD_EM = 0.22;                 // air on each side of × and =, close to a space (0.27)
+  const H_SIGN_EM = DIGIT_EM + 2 * H_SIGN_PAD_EM;   // × and = are digit-wide in Andika (0.586)
+  const H_LINE_EXTRA_EM = 0.6;                // answer line past the longest answer, room to write
+  const H_GUTTER_EM = 0.6;                    // space between neighboring problems
+  const H_EM_PER_ROW = 2.0;                   // one line plus air above and below
+  const H_MAX_FONT = 22;
+
   /** Small seeded generator so editing the title doesn't reshuffle the sheet. */
   function mulberry32(a) {
     return function () {
@@ -159,6 +169,28 @@
   }
 
   /**
+   * Room one one-line times table problem needs, for layout() and maxColsFor(),
+   * plus its column widths in em: [a × b, =, answer line]. "a × b" is one
+   * group, set right so it ends against the = sign, which keeps its spacing
+   * even whether the numbers have 1 digit or 2. Like long division, widths
+   * come from the largest numbers on the sheet, so the = signs and answer
+   * lines line up down every column. `vars` are the CSS custom properties the
+   * page sets on each grid: the column widths and the sign padding.
+   */
+  function horizontalSize(facts) {
+    const digits = (n) => String(n).length;
+    let da = 1, db = 1, dp = 1;
+    for (const [a, b, p] of facts) { da = Math.max(da, digits(a)); db = Math.max(db, digits(b)); dp = Math.max(dp, digits(p)); }
+    const cols = [(da + db) * DIGIT_EM + H_SIGN_EM, H_SIGN_EM, dp * DIGIT_EM + H_LINE_EXTRA_EM];
+    const width = cols.reduce((sum, w) => sum + w, 0);
+    return {
+      cols,
+      vars: { "--cols": cols.map((w) => w.toFixed(3) + "em").join(" "), "--sign-pad": H_SIGN_PAD_EM + "em" },
+      emPerCol: width + H_GUTTER_EM, emPerRow: H_EM_PER_ROW, maxFont: H_MAX_FONT
+    };
+  }
+
+  /**
    * Pick a font size (pt) and pagination for a cols x rows grid.
    * emPerCol and emPerRow are the room one problem needs, in em; maxFont caps
    * the size on small grids. Stays on one page while the font is readable,
@@ -244,9 +276,9 @@
    * match a key to the sheet in hand, even across shuffles or later visits. It
    * covers everything that decides what lands where: the operation, the grid
    * width, the page split, and every problem's numbers in order. The problem
-   * format (stacked or long division) is left out on purpose: it changes how a
-   * problem looks, not which answer goes where, so a key in either format
-   * answers a worksheet in the other, and matching codes say so.
+   * format (stacked, one line, or long division) is left out on purpose: it
+   * changes how a problem looks, not which answer goes where, so a key in one
+   * format answers a worksheet in another, and matching codes say so.
    */
   function sheetCode(op, cols, rowsPerPage, problems) {
     let s = op + "|" + cols + "|" + rowsPerPage;
@@ -268,9 +300,11 @@
   // these characters, so a division sheet can never pass as times tables. Long
   // division prints no sign text (its bracket is drawn in CSS), so the check
   // knows it by the order of its parts instead: the divisor, then the answer
-  // and the dividend under it, as the page builds it.
+  // and the dividend under it, as the page builds it. A one-line times table
+  // problem prints two signs, × and then =, both marked "sign".
   const FORMS = {
     "× stacked": { parts: ["a", "sign", "b", "answer"], signs: ["×"] },
+    "× horizontal": { parts: ["a", "sign", "b", "sign", "answer"], signs: ["×", "="] },
     "÷ stacked": { parts: ["a", "sign", "b", "answer"], signs: ["÷"] },
     "÷ long": { parts: ["b", "answer", "a"], signs: [] }
   };
@@ -298,7 +332,8 @@
   /**
    * The read-back check, run on the built pages before they go on screen.
    * sheet: { op, format, cols, rows, rowsPerPage } from the settings and layout;
-   *   format is "stacked" or, for division, "long" (see FORMS).
+   *   format is "stacked", "horizontal" (times tables only), or "long"
+   *   (division only); see FORMS.
    * sheetPages and keyPages: pages read back as plain text, each
    *   { grid, codes: [code text], cells: [{ text, parts: [[name, text], ...] }] }.
    * keyPages is null when the answer key is off; the worksheet is checked either way.
@@ -362,7 +397,7 @@
 
   return {
     GRID_H, STACKED_SIZE, mulberry32, parseNumberList, multiplicationFacts, divisionFacts,
-    dealProblems, listLabel, longDivisionSize, layout, maxColsFor, coverageText,
+    dealProblems, listLabel, longDivisionSize, horizontalSize, layout, maxColsFor, coverageText,
     checkAnswer, readWhole, pageSlices, sheetCode, verifySheets
   };
 });

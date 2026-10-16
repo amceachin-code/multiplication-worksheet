@@ -100,6 +100,40 @@ test("longDivisionSize grows with the biggest numbers", () => {
   }
 });
 
+test("horizontalSize grows with the biggest numbers", () => {
+  const small = C.horizontalSize(C.multiplicationFacts([4], 1, 9, true));     // 4 × 1 to 4 × 9
+  const big = C.horizontalSize(C.multiplicationFacts([99], 0, 99, false));   // up to 99 × 99 = 9801
+  // Three columns: "a × b", =, and the answer line.
+  assert.equal(small.cols.length, 3);
+  for (const i of [0, 2]) assert.ok(big.cols[i] > small.cols[i], `column ${i} should widen`);
+  assert.equal(big.cols[1], small.cols[1]);   // the = sign never changes size
+  assert.equal(big.emPerRow, small.emPerRow); // always one line
+  // The answer line is longer than the longest answer, so there is room to write:
+  // 2-digit answers here, 4-digit in the big one.
+  const pad = parseFloat(small.vars["--sign-pad"]);
+  const digitRoom = (small.cols[0] - small.cols[1]) / 2;   // "4 × 7" less its sign: two digits, one each
+  assert.ok(small.cols[2] > 2 * digitRoom && big.cols[2] > 4 * digitRoom);
+  // The = column is a digit-wide sign plus the padding the page gives it on each side.
+  assert.ok(Math.abs(small.cols[1] - 2 * pad - digitRoom) < 1e-9);
+  assert.equal(big.vars["--cols"], big.cols.map((w) => w.toFixed(3) + "em").join(" "));
+  // Which side the table number is on doesn't change the widths.
+  assert.deepEqual(C.horizontalSize(C.multiplicationFacts([7], 10, 12, false)).cols,
+    C.horizontalSize(C.multiplicationFacts([7], 10, 12, true)).cols);
+});
+
+test("one-line times tables fit 5 per row by 20 rows on one page", () => {
+  // 0 to 10 facts, the sheet this layout is mostly for: 100 problems, about 14 pt.
+  const L = C.layout(5, 20, C.horizontalSize(C.multiplicationFacts(range(0, 10), 0, 10, true)));
+  assert.equal(L.pages, 1);
+  assert.ok(L.font >= 13.5, `font ${L.font}`);
+  // Even 99 × 99 = 9801 fits 5 per row at 11 pt or more.
+  const big = C.horizontalSize(C.multiplicationFacts([99], 0, 99, true));
+  assert.equal(C.maxColsFor(big.emPerCol), 5);
+  const bigL = C.layout(5, 20, big);
+  assert.equal(bigL.pages, 1);
+  assert.ok(bigL.font >= 11, `font ${bigL.font}`);
+});
+
 test("layout keeps default sheets on one page and splits tall ones", () => {
   assert.equal(C.layout(10, 10, C.STACKED_SIZE).pages, 1);
   const tall = C.layout(12, 40, C.STACKED_SIZE);
@@ -139,7 +173,8 @@ test("pageSlices puts every problem on exactly one page, in order", () => {
 
 test("pageSlices makes as many pages as layout says", () => {
   const long = C.longDivisionSize(C.divisionFacts([2, 99], 0, 99));
-  for (const size of [C.STACKED_SIZE, long]) {
+  const horiz = C.horizontalSize(C.multiplicationFacts([2, 99], 0, 99, true));
+  for (const size of [C.STACKED_SIZE, long, horiz]) {
     for (const [cols, rows] of [[10, 10], [12, 40], [15, 60], [1, 1], [7, 33]]) {
       const L = C.layout(cols, rows, size);
       const pages = C.pageSlices([...Array(cols * rows).keys()], cols, L.rowsPerPage);

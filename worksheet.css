@@ -141,7 +141,7 @@ label.switch { flex-direction: row; align-items: center; gap: 10px; cursor: poin
 .switch input:checked::before { background: var(--surface); transform: translateX(16px); }
 
 /* Two-choice segmented control (radio buttons drawn as one bar), like the
-   times table page's "Times-table number goes" and the division page's layout. */
+   Layout choice on both pages and the times table page's "Times-table number goes". */
 .seg-caption { font-size: 0.9rem; }
 .seg {
   display: grid;

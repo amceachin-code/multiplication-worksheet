@@ -1,5 +1,42 @@
 # Progress
 
+## 2026-10-16 (times table layouts)
+
+### Changes
+
+- Added a Layout choice to the Sheet section of the times table page, above "Times-table number goes": "Stacked" or "One line". It is saved with the other settings, under the page's existing storage key. The default is Stacked, which is unchanged.
+- One line prints each problem as `4 × 7 = ___`. "4 × 7" is one group, set right against the = sign, then the = sign, then an answer line. The = signs and answer lines line up down every column. The answer key prints the product in bold on the line, and the line does not move between worksheet and key.
+- New `WorksheetCore.horizontalSize(facts)`, like `longDivisionSize`. Widths come from the biggest numbers on the sheet, in three columns (a × b, =, answer line), and reach the page as the CSS variables `--cols` and `--sign-pad`. Signs get 0.22 em of air on each side. The answer line is 0.6 em longer than the longest answer, for room to write. The page-only styles are `.horiz` in an inline style block in `index.html`, the times page's only one.
+- Picking a layout resets the grid to that layout's starting size: Stacked 10 per row by 10 rows, One line 5 per row by 20 rows (100 problems on a page). Restoring saved settings on a visit does not reset anything. Both numbers can still be changed.
+- On one line, the "Times-table number goes" buttons read "First" and "Second" instead of "On top" and "On bottom".
+- Per-row cap: Stacked still allows up to 15. One line allows as many as fit at 11 pt or more: 6 for 0 to 10 facts, 5 for 99 × 99 = 9801, more for small numbers (7 for 4s times 1 to 10), never over 15. Over the cap, the message reads "Problems per row: use 1 to 6 on one line with these numbers."
+- Sizes: 0 to 10 facts at 5 × 20 print at 14.1 pt on one page. 4s times 1 to 10 at 5 × 20 print at 15.8 pt, 1 to 12 at 6 × 20 at 11.8 pt, and 99 × 99 at 5 × 20 at 13.0 pt. Stacked 10 × 10 is unchanged at 13.8 pt.
+- Answer key check: the table of printed forms gained `× horizontal` (parts a, sign, b, sign, answer, with × then =, both marked "sign"). `÷ horizontal` is refused as an unknown format.
+- Tests: 33 Node tests pass (was 31). New core tests: `horizontalSize grows with the biggest numbers` and `one-line times tables fit 5 per row by 20 rows on one page`. The `pageSlices` test now covers the one-line size too. The read-back tests run on four printed forms, with 857 single-change mutations (214 stacked times tables, 217 one-line times tables, 214 stacked division, 212 long division). The one-line form adds three = sign cases: changed, missing, and signs out of order. `÷ horizontal` joined the unknown-format cases.
+- Browser checks: 14 settings across both table positions, 1,822 answers, all right. Answer lines did not move between sheet and key, nothing overflowed its cell, and answers cleared the ends of their line by at least 0.31 em. Also checked: the cap message, the reset on a layout switch, the saved layout across a reload, a planted wrong answer (the key was left out and Print turned off), phone width (375 px, no sideways scroll), and the division page in both layouts (unaffected).
+- Print checks (headless Chrome): 0 to 10 at 5 × 20 printed as 1 worksheet page and 1 key page on letter paper. 7s and 99s from 0 to 99 at 5 × 45 printed as 2 and 2. All 325 key answers were recomputed correctly from `pdftotext` output, and the worksheet pages had blank answer spots.
+- Review pass (the user picked all four findings): fixed a bug where stacked mode briefly capped at 14 per row with the one-line message (the new cap now applies only to one line), used one name for the chosen tables, removed a text-align rule that did nothing, and reflowed two comment lines. Rechecked after.
+- Regenerated `og-image.png` (1200x630, light mode, default settings, fresh profile, scrollbars hidden), since the panel gained the Layout control.
+
+### Decisions
+
+- The user asked for stacked or horizontal problems, and asked whether 5 per row by 20 rows fits (it does). 100 per page is mostly for 0 to 10 facts.
+- The user chose `8 × 2 = ___` with an answer line over a bare `8 × 2`, and chose to reset the grid on a layout switch.
+- "a × b" is one group, set right, the way most printed worksheets set it. A first version gave each factor its own fixed column, which left uneven gaps (`0 × 7    =` next to a cramped `0 × 10=`). One group keeps the spacing even and still lines up the = signs and answer lines.
+- One line caps problems per row by width, so type stays at 11 pt or more. Stacked keeps its fixed 15.
+- The sheet code still ignores the layout on purpose, so a key in one layout answers a worksheet in the other when the codes match, on both pages now.
+- Built without a separate written plan.
+
+### Files touched
+
+- `index.html`, `og-image.png`, `worksheet-core.js`, `worksheet-ui.js` (comment only), `worksheet.css` (comment only), `tests/answer-key.test.js`, `tests/worksheet-core.test.js`, `README.md`, `TODO.md`, `PROGRESS.md`
+
+### Next steps
+
+- Commit and push after the user reviews (nothing is committed yet).
+- Check the live times table page in both layouts with the answer key on.
+- Print a one-line sheet on a real printer, and from iPhone Safari and an Android phone.
+
 ## 2026-10-16 (division layouts)
 
 ### Changes

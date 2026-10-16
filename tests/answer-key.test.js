@@ -80,6 +80,7 @@ test("readWhole reads plain digits only", () => {
 
 const KINDS = [
   { op: "×", format: "stacked" },
+  { op: "×", format: "horizontal" },
   { op: "÷", format: "stacked" },
   { op: "÷", format: "long" }
 ];
@@ -87,11 +88,12 @@ const DIVISION_KINDS = KINDS.filter((k) => k.op === "÷");
 const kindName = (k) => k.op + " " + k.format;
 
 // One problem's parts in the order the pages build them: a stacked problem
-// reads top, sign, bottom, answer; long division reads divisor, answer, dividend.
+// reads top, sign, bottom, answer; a one-line problem reads the same with an
+// = sign before the answer; long division reads divisor, answer, dividend.
 function cellFor({ op, format }, [a, b, answer], showAnswer) {
   const ans = showAnswer ? String(answer) : "";
-  const parts = format === "long"
-    ? [["b", String(b)], ["answer", ans], ["a", String(a)]]
+  const parts = format === "long" ? [["b", String(b)], ["answer", ans], ["a", String(a)]]
+    : format === "horizontal" ? [["a", String(a)], ["sign", op], ["b", String(b)], ["sign", "="], ["answer", ans]]
     : [["a", String(a)], ["sign", op], ["b", String(b)], ["answer", ans]];
   return { text: parts.map((p) => p[1]).join(""), parts };
 }
@@ -260,23 +262,35 @@ test("verifySheets rejects answers on the worksheet, bad codes, stray text, and 
     rejects(kind, "stray text on the key", (s) => { keyCells(s)[2].text += "1"; });
     rejects(kind, "stray text on the worksheet", (s) => { s.sheetPages[0].cells[2].text += "1"; });
     rejects(kind, "parts out of order", (s) => { const cell = keyCells(s)[0]; setParts(cell, cell.parts.slice().reverse()); });
-    // Stacked problems print exactly one sign, the right one. Long division
-    // prints none, so a sign there means the problem isn't what the check expects.
+    // Stacked problems print exactly one sign, the right one, and one-line
+    // problems print the sign and then =. Long division prints none, so a sign
+    // there means the problem isn't what the check expects.
     rejects(kind, "extra sign", (s) => { const cell = keyCells(s)[0]; setParts(cell, [...cell.parts, ["sign", op]]); });
-    if (format === "stacked") {
+    if (format !== "long") {
       rejects(kind, "missing sign", (s) => { const cell = keyCells(s)[0]; setParts(cell, cell.parts.filter((p) => p[0] !== "sign")); });
       rejects(kind, "look-alike sign", (s) => setPart(keyCells(s)[0], "sign", op === "×" ? "x" : ":"));
       rejects(kind, "the other operation's sign", (s) => setPart(keyCells(s)[0], "sign", op === "×" ? "÷" : "×"));
-    } else {
+    }
+    if (format === "horizontal") {
+      // The = sign is the second "sign" part; setPart only reaches the first.
+      const setEquals = (cell, v) => { cell.parts.filter((p) => p[0] === "sign")[1][1] = v; setParts(cell, cell.parts); };
+      rejects(kind, "equals sign changed", (s) => setEquals(keyCells(s)[0], "-"));
+      rejects(kind, "equals sign missing", (s) => { const cell = keyCells(s)[0]; setParts(cell, cell.parts.filter((p) => p[1] !== "=")); });
+      rejects(kind, "signs in the wrong order", (s) => { const cell = s.sheetPages[0].cells[0]; setPart(cell, "sign", "="); setEquals(cell, "×"); });
+    }
+    if (format === "long") {
       rejects(kind, "division sign added", (s) => { const cell = keyCells(s)[0]; setParts(cell, [cell.parts[0], ["sign", "÷"], ...cell.parts.slice(1)]); });
     }
     rejects(kind, "checked as the other operation", (s) => { s.sheet.op = op === "×" ? "÷" : "×"; });
-    rejects(kind, "checked as the other format", (s) => { s.sheet.format = format === "long" ? "stacked" : "long"; });
+    // Each operation's other format: times tables have stacked and one line,
+    // division has stacked and long. (A format the operation lacks is covered below.)
+    const otherFormat = format !== "stacked" ? "stacked" : op === "×" ? "horizontal" : "long";
+    rejects(kind, "checked as the other format", (s) => { s.sheet.format = otherFormat; });
   }
 });
 
 test("verifySheets rejects unknown operations and formats with its own error", () => {
-  const cases = [["÷", undefined], ["÷", "symbol"], ["÷", "constructor"], ["÷", "__proto__"], ["×", "long"],
+  const cases = [["÷", undefined], ["÷", "symbol"], ["÷", "constructor"], ["÷", "__proto__"], ["×", "long"], ["÷", "horizontal"],
     ["+", "stacked"], ["toString", "stacked"], ["__proto__", "stacked"], [undefined, undefined]];
   for (const [op, format] of cases) {
     const s = baseSheet(DIVISION_KINDS[0]);

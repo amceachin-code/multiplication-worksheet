@@ -131,11 +131,12 @@
   /**
    * Draw the summary line and every page of the sheet, then the answer key
    * pages when the Answer key switch is on.
-   * opts: op ("×" or "÷"), format (how buildProblem draws a problem, "stacked"
-   * or "long", so the check knows what to expect), problems (already dealt,
-   * each [a, b, answer]), factCount, cols, rows, layout (from
-   * WorksheetCore.layout), title, rangeText, buildProblem(problem, showAnswer)
-   * -> element, and gridVars (CSS custom properties set on each grid).
+   * opts: op ("×" or "÷"), format (how buildProblem draws a problem,
+   * "stacked", "horizontal", or "long", so the check knows what to expect),
+   * problems (already dealt, each [a, b, answer]), factCount, cols, rows,
+   * layout (from WorksheetCore.layout), title, rangeText,
+   * buildProblem(problem, showAnswer) -> element, and gridVars (CSS custom
+   * properties set on each grid).
    *
    * Pages are built off screen, read back, and checked with
    * WorksheetCore.verifySheets. Only pages that pass go on screen, all in one

@@ -20,6 +20,38 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
 <link rel="stylesheet" href="worksheet.css">
+<style>
+/* Page-only styles. Shared layout, panel, paper, print, and stacked problem
+   rules are in worksheet.css. */
+
+/* A problem on one line: "4 × 7 = ___", in three grid columns: "4 × 7", set
+   right against the = sign, then =, then the answer line.
+   WorksheetCore.horizontalSize sets --cols on each grid from the biggest
+   numbers on the sheet, so the = signs and answer lines line up down every
+   column, and --sign-pad, the air on each side of a sign that the widths
+   allow for. Items keep their own heights (align-items: start), and the
+   answer spot has a fixed one, so its line stays put whether the answer is
+   printed or not. */
+.horiz {
+  justify-self: center;
+  align-self: center;
+  display: grid;
+  grid-template-columns: var(--cols);
+  align-items: start;
+  line-height: 1.2;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.horiz .expr { text-align: right; }
+.horiz .sign { padding: 0 var(--sign-pad); }
+/* The answer line: empty on the worksheet, filled on the answer key. */
+.horiz .ans {
+  height: 1.2em;
+  border-bottom: 0.06em solid var(--ink);
+  text-align: center;
+  font-weight: 700;
+}
+</style>
 </head>
 <body>
 <div class="app">
@@ -63,10 +95,15 @@
 
       <fieldset>
         <legend>Sheet</legend>
+        <span class="seg-caption" id="format-label">Layout</span>
+        <div class="seg" role="radiogroup" aria-labelledby="format-label">
+          <label><input type="radio" name="format" id="format-stacked" value="stacked" checked><span>Stacked</span></label>
+          <label><input type="radio" name="format" id="format-horizontal" value="horizontal"><span>One line</span></label>
+        </div>
         <span class="seg-caption" id="pos-label">Times-table number goes</span>
         <div class="seg" role="radiogroup" aria-labelledby="pos-label">
-          <label><input type="radio" name="pos" id="pos-top" value="top" checked><span>On top</span></label>
-          <label><input type="radio" name="pos" id="pos-bottom" value="bottom"><span>On bottom</span></label>
+          <label><input type="radio" name="pos" id="pos-top" value="top" checked><span id="pos-top-text">On top</span></label>
+          <label><input type="radio" name="pos" id="pos-bottom" value="bottom"><span id="pos-bottom-text">On bottom</span></label>
         </div>
         <label for="title">Title (optional)
           <input id="title" type="text" autocomplete="off" placeholder="Multiplication: 4s">
@@ -105,32 +142,79 @@
     empty: "Enter at least one times table, like 4.",
     format: "Use whole numbers from 0 to 99, like 4 or 3, 4, 6 or 2-5."
   };
-  // One stacked problem: the top number, then × and the bottom number over a
-  // rule, then the answer spot. Shared with the division page, as are its
-  // styles (.stacked in worksheet.css) and its size (WorksheetCore.STACKED_SIZE).
-  const buildProblem = (problem, showAnswer) => UI.stackedProblem("×", problem, showAnswer);
+  const MAX_COLS = 15;                        // hard cap; one-line problems may allow fewer
+  // Grid each layout starts from when someone picks it: 10 x 10 stacked, and
+  // 5 x 20 on one line (100 problems on a page either way, for 0 to 10 facts).
+  const DEFAULT_GRID = { stacked: { cols: 10, rows: 10 }, horizontal: { cols: 5, rows: 20 } };
+
+  /** The chosen layout, by the format name the answer key check knows it by. */
+  const readFormat = () => ($("format-horizontal").checked ? "horizontal" : "stacked");
+
+  // The two layouts, keyed by format. Stacked: the top number, then × and the
+  // bottom number over a rule, then the answer spot. Shared with the division
+  // page, as are its styles (.stacked in worksheet.css) and its size
+  // (WorksheetCore.STACKED_SIZE). One line: "4 × 7 = ___", with "4 × 7" as
+  // one group so its spacing stays even (see .horiz in the styles above).
+  // Either way the product prints only on answer key pages (showAnswer must be
+  // exactly true, so a stray argument can't leak answers), and data-part marks
+  // each piece, both signs included, so the answer key check can read it back.
+  const BUILDERS = {
+    stacked: (problem, showAnswer) => UI.stackedProblem("×", problem, showAnswer),
+    horizontal([a, b, product], showAnswer) {
+      const p = UI.el("div", "horiz");
+      const expr = UI.el("span", "expr");
+      expr.append(UI.part("span", "", "a", String(a)), UI.part("span", "sign", "sign", "×"), UI.part("span", "", "b", String(b)));
+      p.append(expr, UI.part("span", "sign", "sign", "="), UI.part("span", "ans", "answer", showAnswer === true ? String(product) : ""));
+      return p;
+    }
+  };
+
+  // On one line the table number comes first or second, not on top or bottom.
+  function labelPosition(format) {
+    const oneLine = format === "horizontal";
+    $("pos-top-text").textContent = oneLine ? "First" : "On top";
+    $("pos-bottom-text").textContent = oneLine ? "Second" : "On bottom";
+  }
+
+  // Picking a layout (not restoring a saved one) resets the grid to that
+  // layout's starting size. The form's input event redraws after this runs.
+  for (const format of Object.keys(DEFAULT_GRID)) {
+    $("format-" + format).addEventListener("change", () => {
+      $("cols").value = DEFAULT_GRID[format].cols;
+      $("rows").value = DEFAULT_GRID[format].rows;
+    });
+  }
 
   function render(seed) {
     // Check every field first so all errors show at once.
     const parsed = C.parseNumberList($("tables").value, 0);
     UI.setMsg($("tables-msg"), parsed.error ? TABLES_ERRORS[parsed.error] : TABLES_HINT, !!parsed.error, [$("tables")]);
     const range = UI.readRange();
-    const grid = UI.readGrid(15);
-    if (parsed.error || !range || !grid) return "invalid";
+    const format = readFormat();
+    labelPosition(format);
+    // Stacked problems are a fixed size and allow up to MAX_COLS per row.
+    // One-line problems are sized to the biggest numbers on the sheet so they
+    // line up, and allow only as many per row as fit at 11 pt or more (fewer
+    // for wide ones like 99 × 99 = 9801).
+    const tables = parsed.error || !range ? null : parsed.numbers;
+    const facts = tables && C.multiplicationFacts(tables, range.from, range.to, $("pos-top").checked);
+    const size = format === "stacked" ? C.STACKED_SIZE : facts && C.horizontalSize(facts);
+    const maxCols = format === "horizontal" && size ? Math.min(MAX_COLS, C.maxColsFor(size.emPerCol)) : MAX_COLS;
+    const grid = UI.readGrid(maxCols, maxCols < MAX_COLS ? "on one line with these numbers" : "");
+    if (!facts || !grid) return "invalid";
 
-    const tables = parsed.numbers;
-    const facts = C.multiplicationFacts(tables, range.from, range.to, $("pos-top").checked);
     const total = grid.cols * grid.rows;
     const problems = C.dealProblems(facts, total, C.mulberry32(seed));
 
     const autoTitle = "Multiplication: " + C.listLabel(tables, "s");
     $("title").placeholder = autoTitle;
     return UI.renderSheets({
-      op: "×", format: "stacked", problems, factCount: facts.length, cols: grid.cols, rows: grid.rows,
-      layout: C.layout(grid.cols, grid.rows, C.STACKED_SIZE),
+      op: "×", format, problems, factCount: facts.length, cols: grid.cols, rows: grid.rows,
+      layout: C.layout(grid.cols, grid.rows, size),
       title: $("title").value.trim() || autoTitle,
       rangeText: "× " + range.from + " to " + range.to,
-      buildProblem
+      buildProblem: BUILDERS[format],
+      gridVars: format === "horizontal" ? size.vars : {}
     });
   }
 
@@ -138,8 +222,11 @@
     storeKey: "times-table-worksheets:v1",
     fields: ["tables", "from", "to", "cols", "rows", "title"],
     render,
-    getExtra: () => ({ pos: $("pos-top").checked ? "top" : "bottom" }),
-    applyExtra: (d) => { if (d.pos === "bottom") $("pos-bottom").checked = true; }
+    getExtra: () => ({ pos: $("pos-top").checked ? "top" : "bottom", format: readFormat() }),
+    applyExtra: (d) => {
+      if (d.pos === "bottom") $("pos-bottom").checked = true;
+      if (d.format === "horizontal") $("format-horizontal").checked = true;
+    }
   });
 })();
 </script>

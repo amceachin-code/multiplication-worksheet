@@ -68,6 +68,19 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - [ ] Commit and push, then check the live division page in both layouts with the key on.
 - [ ] Print both layouts on a real printer and from phones.
 
+## 7. Times table layouts
+
+- [x] Layout choice on the times table page: Stacked or One line (`4 × 7 = ___`). Saved between visits.
+- [x] Picking a layout resets the grid: 10 × 10 stacked, 5 per row by 20 rows on one line (100 problems on a page).
+- [x] One-line widths come from the biggest numbers, so the = signs and answer lines line up. Per row is capped so type stays at 11 pt or more.
+- [x] Answer key and its read-back check cover the one-line form.
+- [x] Node tests: 33 pass, with 857 single-change mutations across the four printed forms.
+- [x] Browser checks, PDF read-back, and a planted wrong answer.
+- [x] Review pass.
+- [x] Regenerate `og-image.png`.
+- [ ] Commit and push, then check the live times table page in both layouts with the key on.
+- [ ] Print a one-line sheet on a real printer and from phones.
+
 ## Later, maybe
 
 - [x] Answer key page (optional checkbox, prints after the worksheet).
