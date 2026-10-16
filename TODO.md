@@ -90,7 +90,7 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - [x] Node tests: 35 pass, with the read-back sweep covering Mixed sheets.
 - [x] Browser checks on both pages, at phone width and in the desktop panel.
 - [x] Review pass.
-- [ ] Commit and push, then check typing commas, dashes, and "to" on a real phone (ideally the friend's iPhone).
+- [x] Commit and push, then check typing commas, dashes, and "to" on a real phone. Checked on an iPhone.
 
 ## Later, maybe
 
