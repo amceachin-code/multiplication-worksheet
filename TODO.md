@@ -78,7 +78,7 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - [x] Browser checks, PDF read-back, and a planted wrong answer.
 - [x] Review pass.
 - [x] Regenerate `og-image.png`.
-- [ ] Commit and push, then check the live times table page in both layouts with the key on.
+- [x] Commit and push, then check the live times table page in both layouts with the key on.
 - [ ] Print a one-line sheet on a real printer and from phones.
 
 ## Later, maybe
