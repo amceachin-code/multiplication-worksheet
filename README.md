@@ -17,3 +17,10 @@ A one-page web app that builds printable multiplication worksheets.
 - **Shuffle again** makes a new order. Changing the title keeps the current order.
 - Large grids split across pages automatically. Small grids get bigger numbers.
 - Settings are remembered in your browser between visits.
+
+## Hosting
+
+- GitHub Pages serves the site from `main`, root folder.
+- It lives at https://www.andrew-mceachin.com/multiplication-worksheet/ because the user site (`amceachin-code.github.io`) carries that custom domain. Old github.io links redirect there.
+- The Students & Guardians page links to it: https://www.andrew-mceachin.com/tools/
+- `og-image.png` is the link preview image, a 1200x630 light-mode screenshot of the page. Regenerate it when the layout changes.
