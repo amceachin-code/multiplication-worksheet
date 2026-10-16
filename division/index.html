@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Division Worksheets</title>
+<!-- Link previews: group texts and class emails show this title, text, and image. OG URLs must be absolute. -->
+<meta name="description" content="Free printable division worksheets. Pick the numbers to divide by, then print. Nothing to sign up for, and nothing is collected.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Division Worksheets">
+<meta property="og:description" content="Free printable division worksheets. Pick the numbers to divide by, then print.">
+<meta property="og:url" content="https://www.andrew-mceachin.com/multiplication-worksheet/division/">
+<meta property="og:image" content="https://www.andrew-mceachin.com/multiplication-worksheet/division/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Inline SVG favicon: a pencil-yellow tile with a division sign, so there is no extra file to serve. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f5c13e'/%3E%3Cpath d='M8 16h16' stroke='%232a2206' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='9' r='2.6' fill='%232a2206'/%3E%3Ccircle cx='16' cy='23' r='2.6' fill='%232a2206'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="../worksheet.css">
+<style>
+/* Page-only styles. Shared layout, panel, paper, and print rules are in worksheet.css. */
+
+/* One horizontal problem: dividend ÷ divisor = blank. Column widths come from
+   --cols, set per sheet so every problem lines up with its neighbors. */
+.prob {
+  justify-self: center;
+  align-self: center;
+  display: grid;
+  grid-template-columns: var(--cols);
+  align-items: baseline;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.prob .num { text-align: right; }
+.prob .sign { text-align: center; }
+.prob .blank { border-bottom: 0.07em solid var(--ink); height: 1em; margin-left: 0.15em; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="panel">
+    <div class="brand">
+      <h1>Division Worksheets</h1>
+      <p>Pick the numbers to divide by, then click Print worksheet. The sheet updates as you type.</p>
+      <p class="cross-link"><a href="../">Times table worksheets</a></p>
+    </div>
+
+    <form id="settings" novalidate>
+      <fieldset>
+        <legend>Facts</legend>
+        <label for="divisors">Divide by
+          <input id="divisors" type="text" inputmode="numeric" autocomplete="off" value="4" aria-describedby="divisors-msg">
+        </label>
+        <span id="divisors-msg" class="hint">One or more, like 4 or 3, 4, 6 or 2-5</span>
+        <div class="pair">
+          <label for="from">Answers from
+            <input id="from" type="number" inputmode="numeric" min="0" max="99" value="1">
+          </label>
+          <label for="to">to
+            <input id="to" type="number" inputmode="numeric" min="0" max="99" value="10">
+          </label>
+        </div>
+        <span id="range-msg" class="err" hidden></span>
+        <span class="hint">Every answer is a whole number. No remainders.</span>
+      </fieldset>
+
+      <fieldset>
+        <legend>Grid</legend>
+        <div class="pair">
+          <label for="cols">Problems per row
+            <input id="cols" type="number" inputmode="numeric" min="1" max="8" value="4">
+          </label>
+          <label for="rows">Rows
+            <input id="rows" type="number" inputmode="numeric" min="1" max="60" value="10">
+          </label>
+        </div>
+        <span id="grid-msg" class="err" hidden></span>
+      </fieldset>
+
+      <fieldset>
+        <legend>Sheet</legend>
+        <label for="title">Title (optional)
+          <input id="title" type="text" autocomplete="off" placeholder="Dividing by 4">
+        </label>
+      </fieldset>
+    </form>
+
+    <p class="summary" id="summary" aria-live="polite"></p>
+
+    <div class="actions">
+      <button type="button" class="btn-print" id="print">Print worksheet</button>
+      <button type="button" class="btn-shuffle" id="shuffle">Shuffle again</button>
+      <p class="print-note">Prints the worksheet only, on letter paper. Each shuffle makes a new order.</p>
+    </div>
+  </aside>
+
+  <main class="preview" id="preview" aria-label="Worksheet preview"></main>
+</div>
+
+<script src="../worksheet-core.js"></script>
+<script src="../worksheet-ui.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // Shared logic lives in worksheet-core.js (pure) and worksheet-ui.js (DOM).
+  const C = window.WorksheetCore, UI = window.WorksheetUI, $ = UI.$;
+  const DIVISORS_HINT = "One or more, like 4 or 3, 4, 6 or 2-5";
+  const DIVISORS_ERRORS = {
+    empty: "Enter at least one number to divide by, like 4.",
+    format: "Use whole numbers from 1 to 99, like 4 or 3, 4, 6 or 2-5.",
+    below: "You can't divide by 0. Use numbers from 1 to 99."
+  };
+  const EM_PER_ROW = 2.6;                     // one line of text plus room to write
+  const COL_GUTTER_EM = 1.2;                  // space between neighboring problems
+  const MAX_FONT = 24;
+  const MAX_COLS = 8;                         // hard cap; narrower problems may allow fewer
+
+  // One problem reads "24 ÷ 4 = ____". The quotient is never printed.
+  function buildProblem([dividend, divisor]) {
+    const p = UI.el("div", "prob");
+    p.append(
+      UI.el("span", "num", String(dividend)), UI.el("span", "sign", "÷"),
+      UI.el("span", "num", String(divisor)), UI.el("span", "sign", "="),
+      UI.el("span", "blank")
+    );
+    return p;
+  }
+
+  function render(seed) {
+    // Check every field first so all errors show at once.
+    const parsed = C.parseNumberList($("divisors").value, 1);
+    UI.setMsg($("divisors-msg"), parsed.error ? DIVISORS_ERRORS[parsed.error] : DIVISORS_HINT, !!parsed.error, [$("divisors")]);
+    const range = UI.readRange();
+    // Size columns to the biggest numbers on the sheet so the problems line up.
+    // Wider problems (like 144 ÷ 12) allow fewer per row so the type stays readable.
+    const facts = parsed.error || !range ? null : C.divisionFacts(parsed.numbers, range.from, range.to);
+    const widths = facts && C.divisionWidths(facts);
+    const maxCols = widths ? Math.min(MAX_COLS, C.maxColsFor(widths.total + COL_GUTTER_EM)) : MAX_COLS;
+    const grid = UI.readGrid(maxCols, maxCols < MAX_COLS ? "with these numbers" : "");
+    if (!facts || !grid) return false;
+
+    const divisors = parsed.numbers;
+    const total = grid.cols * grid.rows;
+    const problems = C.dealProblems(facts.map((_, i) => i), total, C.mulberry32(seed)).map((i) => facts[i]);
+
+    const autoTitle = "Dividing by " + C.listLabel(divisors, "");
+    $("title").placeholder = autoTitle;
+    UI.renderSheets({
+      problems, factCount: facts.length, cols: grid.cols, rows: grid.rows,
+      layout: C.layout(grid.cols, grid.rows, { emPerCol: widths.total + COL_GUTTER_EM, emPerRow: EM_PER_ROW, maxFont: MAX_FONT }),
+      title: $("title").value.trim() || autoTitle,
+      rangeText: "Answers " + range.from + " to " + range.to,
+      buildProblem,
+      gridVars: { "--cols": widths.cols.map((w) => w.toFixed(3) + "em").join(" ") }
+    });
+    return true;
+  }
+
+  UI.start({
+    storeKey: "division-worksheets:v1",
+    fields: ["divisors", "from", "to", "cols", "rows", "title"],
+    render
+  });
+})();
+</script>
+</body>
+</html>

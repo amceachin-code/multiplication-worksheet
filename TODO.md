@@ -4,7 +4,7 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 
 ## Current state
 
-- `index.html` is a single self-contained page (HTML, CSS, JS in one file). No build step.
+- `index.html` (times tables) and `division/index.html` share `worksheet.css`, `worksheet-core.js`, and `worksheet-ui.js`. No build step.
 - Tested in headless Chrome: default settings (4s, ×1 to 10, 10×10) print on one letter page. 250 problems across 3 tables split onto 3 pages. Each fact appears equally often, with no back-to-back repeats.
 - Fonts (Andika, Atkinson Hyperlegible) load from Google Fonts. Offline, the page falls back to system fonts.
 - Live at https://www.andrew-mceachin.com/multiplication-worksheet/ (public repo `amceachin-code/multiplication-worksheet`, Pages from `main` root).
@@ -32,6 +32,15 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - [x] Add a one-line note on the page for parents: "Pick the times tables, then click Print worksheet."
 - [ ] Test on an iPhone (Safari) and an Android phone: settings, Shuffle again, and Print.
 - [x] Confirm the page collects nothing. It stores settings only in the visitor's own browser.
+
+## 4. Division worksheets
+
+- [x] Build `division/index.html` with horizontal `24 ÷ 4 = ___` problems and no remainders.
+- [x] Node tests for the shared logic (`tests/worksheet-core.test.js`).
+- [x] Review pass: shared CSS and JS for both pages.
+- [x] Link the two pages to each other.
+- [x] Add the tool to the Students & Guardians page in `academic-site`.
+- [ ] Push both repos and check https://www.andrew-mceachin.com/multiplication-worksheet/division/ and https://www.andrew-mceachin.com/tools/
 
 ## Later, maybe
 

@@ -1,0 +1,237 @@
+/* Shared styles for the times table and division worksheet pages.
+   Each page keeps only its problem layout (and any page-only controls) inline.
+
+   Layout: settings column on the left, letter-size paper preview on the right. Stacks on phones. */
+:root {
+  --desk: #e7ecf2;
+  --surface: #f6f8fb;
+  --text: #17202b;
+  --muted: #586473;
+  --line: #c9d2dd;
+  --field: #ffffff;
+  --pencil: #f5c13e;
+  --pencil-ink: #2a2206;
+  --blue: #2c5ba6;
+  --error: #b42318;
+  /* Paper stays paper in both themes. */
+  --paper: #ffffff;
+  --ink: #111111;
+  --rule: #9aa3ad;
+  --font-sheet: "Andika", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-ui: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --desk: #0f141b;
+    --surface: #161d26;
+    --text: #e4e9ef;
+    --muted: #98a4b2;
+    --line: #2b3542;
+    --field: #0f141b;
+    --pencil: #f5c13e;
+    --pencil-ink: #2a2206;
+    --blue: #8eb2ef;
+    --error: #ff8f86;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--desk);
+  color: var(--text);
+  font: 15px/1.45 var(--font-ui);
+}
+
+.app {
+  display: grid;
+  grid-template-columns: minmax(270px, 330px) minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+/* ---------- Settings panel ---------- */
+.panel {
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  padding: 28px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.brand h1 {
+  font-family: var(--font-sheet);
+  font-weight: 700;
+  font-size: 1.6rem;
+  line-height: 1.15;
+  margin: 0 0 4px;
+  text-wrap: balance;
+}
+.brand p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+
+form { display: flex; flex-direction: column; gap: 20px; }
+fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+legend {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0;
+  margin-bottom: 8px;
+}
+label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+input[type="text"], input[type="number"] {
+  font: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  width: 100%;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+input:focus-visible, button:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+input[aria-invalid="true"] { border-color: var(--error); }
+.hint { font-size: 0.82rem; color: var(--muted); }
+.err { font-size: 0.82rem; color: var(--error); }
+
+.summary {
+  font-size: 0.88rem;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  margin: 0;
+}
+.summary strong { color: var(--text); font-variant-numeric: tabular-nums; }
+
+.actions { display: flex; flex-direction: column; gap: 10px; }
+button {
+  font: inherit;
+  font-weight: 700;
+  font-size: 1rem;
+  border-radius: 6px;
+  padding: 11px 14px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.btn-print { background: var(--pencil); color: var(--pencil-ink); }
+.btn-print:hover { filter: brightness(1.05); }
+.btn-print:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-shuffle { background: transparent; color: var(--text); border-color: var(--line); }
+.btn-shuffle:hover { border-color: var(--muted); }
+.print-note { font-size: 0.8rem; color: var(--muted); margin: 0; }
+.brand .cross-link { font-size: 0.88rem; margin: 8px 0 0; }
+.cross-link a { color: var(--blue); }
+
+/* ---------- Preview ---------- */
+.preview {
+  padding: 32px 32px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  min-width: 0;
+}
+.sheet-wrap { width: min(100%, 760px); container-type: inline-size; }
+.page-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+
+/* All sheet sizes are in inches so screen and print match. */
+.paper {
+  --in: calc(100cqw / 8.5);
+  width: 100%;
+  aspect-ratio: 8.5 / 11;
+  background: var(--paper);
+  color: var(--ink);
+  padding: calc(var(--in) * 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--in) * 0.15);
+  font-family: var(--font-sheet);
+  box-shadow: 0 1px 2px rgba(15, 25, 40, 0.12), 0 8px 24px rgba(15, 25, 40, 0.10);
+  overflow: hidden;
+}
+.ws-head {
+  height: calc(var(--in) * 1.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-bottom: calc(var(--in) * 0.014) solid var(--ink);
+  padding-bottom: calc(var(--in) * 0.1);
+  flex: none;
+}
+.ws-fields {
+  display: flex;
+  gap: calc(var(--in) * 0.35);
+  font-size: calc(var(--in) * 12 / 72);
+}
+.ws-field { display: flex; align-items: flex-end; gap: calc(var(--in) * 0.08); }
+.ws-field.name { flex: 1 1 auto; }
+.ws-field.date { flex: 0 0 calc(var(--in) * 2.4); }
+.ws-field .blank { flex: 1; border-bottom: calc(var(--in) * 0.01) solid var(--ink); height: 1.1em; }
+.ws-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: calc(var(--in) * 0.2);
+}
+.ws-title h2 {
+  margin: 0;
+  font-size: calc(var(--in) * 20 / 72);
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.ws-meta {
+  font-size: calc(var(--in) * 10 / 72);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.ws-grid { display: grid; flex: none; }
+@media (max-width: 820px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .panel { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 24px 16px; }
+  .preview { padding: 24px 16px 40px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ---------- Print: only the sheets, one per page ---------- */
+@media print {
+  @page { size: letter; margin: 0; }
+  html, body { background: #fff; }
+  .panel, .page-label { display: none !important; }
+  .app { display: block; min-height: 0; }
+  .preview { display: block; padding: 0; }
+  .sheet-wrap { width: 8.5in; container-type: normal; }
+  .paper {
+    --in: 1in;
+    width: 8.5in;
+    height: 10.97in;
+    aspect-ratio: auto;
+    box-shadow: none;
+    break-after: page;
+  }
+  .sheet-wrap:last-child .paper { break-after: auto; }
+}

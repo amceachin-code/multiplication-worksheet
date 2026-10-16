@@ -19,114 +19,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="worksheet.css">
 <style>
-/* Layout: settings column on the left, letter-size paper preview on the right. Stacks on phones. */
-:root {
-  --desk: #e7ecf2;
-  --surface: #f6f8fb;
-  --text: #17202b;
-  --muted: #586473;
-  --line: #c9d2dd;
-  --field: #ffffff;
-  --pencil: #f5c13e;
-  --pencil-ink: #2a2206;
-  --blue: #2c5ba6;
-  --error: #b42318;
-  /* Paper stays paper in both themes. */
-  --paper: #ffffff;
-  --ink: #111111;
-  --rule: #9aa3ad;
-  --font-sheet: "Andika", "Avenir Next", "Segoe UI", system-ui, sans-serif;
-  --font-ui: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --desk: #0f141b;
-    --surface: #161d26;
-    --text: #e4e9ef;
-    --muted: #98a4b2;
-    --line: #2b3542;
-    --field: #0f141b;
-    --pencil: #f5c13e;
-    --pencil-ink: #2a2206;
-    --blue: #8eb2ef;
-    --error: #ff8f86;
-    color-scheme: dark;
-  }
-}
-
-* { box-sizing: border-box; }
-html, body { margin: 0; }
-body {
-  background: var(--desk);
-  color: var(--text);
-  font: 15px/1.45 var(--font-ui);
-}
-
-.app {
-  display: grid;
-  grid-template-columns: minmax(270px, 330px) minmax(0, 1fr);
-  min-height: 100vh;
-}
-
-/* ---------- Settings panel ---------- */
-.panel {
-  background: var(--surface);
-  border-right: 1px solid var(--line);
-  padding: 28px 24px 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
-}
-.brand h1 {
-  font-family: var(--font-sheet);
-  font-weight: 700;
-  font-size: 1.6rem;
-  line-height: 1.15;
-  margin: 0 0 4px;
-  text-wrap: balance;
-}
-.brand p { margin: 0; color: var(--muted); font-size: 0.92rem; }
-
-form { display: flex; flex-direction: column; gap: 20px; }
-fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-legend, .label {
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-  padding: 0;
-  margin-bottom: 8px;
-}
-label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
-.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-input[type="text"], input[type="number"] {
-  font: inherit;
-  font-size: 1rem;
-  color: var(--text);
-  background: var(--field);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 8px 10px;
-  width: 100%;
-  min-width: 0;
-  font-variant-numeric: tabular-nums;
-}
-input:focus-visible, button:focus-visible, .seg input:focus-visible + span {
-  outline: 2px solid var(--blue);
-  outline-offset: 2px;
-}
-input[aria-invalid="true"] { border-color: var(--error); }
-.hint { font-size: 0.82rem; color: var(--muted); }
-.err { font-size: 0.82rem; color: var(--error); }
-
+/* Page-only styles. Shared layout, panel, paper, and print rules are in worksheet.css. */
+.seg-caption { font-size: 0.9rem; }
 .seg {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -146,107 +42,9 @@ input[aria-invalid="true"] { border-color: var(--error); }
 }
 .seg label + label span { border-left: 1px solid var(--line); }
 .seg input:checked + span { background: var(--text); color: var(--surface); font-weight: 700; }
+.seg input:focus-visible + span { outline: 2px solid var(--blue); outline-offset: 2px; }
 
-.summary {
-  font-size: 0.88rem;
-  color: var(--muted);
-  border-top: 1px solid var(--line);
-  padding-top: 16px;
-  margin: 0;
-}
-.summary strong { color: var(--text); font-variant-numeric: tabular-nums; }
-
-.actions { display: flex; flex-direction: column; gap: 10px; }
-button {
-  font: inherit;
-  font-weight: 700;
-  font-size: 1rem;
-  border-radius: 6px;
-  padding: 11px 14px;
-  cursor: pointer;
-  border: 1px solid transparent;
-}
-.btn-print { background: var(--pencil); color: var(--pencil-ink); }
-.btn-print:hover { filter: brightness(1.05); }
-.btn-print:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-shuffle { background: transparent; color: var(--text); border-color: var(--line); }
-.btn-shuffle:hover { border-color: var(--muted); }
-.print-note { font-size: 0.8rem; color: var(--muted); margin: 0; }
-
-/* ---------- Preview ---------- */
-.preview {
-  padding: 32px 32px 48px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 28px;
-  min-width: 0;
-}
-.sheet-wrap { width: min(100%, 760px); container-type: inline-size; }
-.page-label {
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 0 0 8px;
-}
-
-/* All sheet sizes are in inches so screen and print match. */
-.paper {
-  --in: calc(100cqw / 8.5);
-  width: 100%;
-  aspect-ratio: 8.5 / 11;
-  background: var(--paper);
-  color: var(--ink);
-  padding: calc(var(--in) * 0.5);
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--in) * 0.15);
-  font-family: var(--font-sheet);
-  box-shadow: 0 1px 2px rgba(15, 25, 40, 0.12), 0 8px 24px rgba(15, 25, 40, 0.10);
-  overflow: hidden;
-}
-.ws-head {
-  height: calc(var(--in) * 1.05);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  border-bottom: calc(var(--in) * 0.014) solid var(--ink);
-  padding-bottom: calc(var(--in) * 0.1);
-  flex: none;
-}
-.ws-fields {
-  display: flex;
-  gap: calc(var(--in) * 0.35);
-  font-size: calc(var(--in) * 12 / 72);
-}
-.ws-field { display: flex; align-items: flex-end; gap: calc(var(--in) * 0.08); }
-.ws-field.name { flex: 1 1 auto; }
-.ws-field.date { flex: 0 0 calc(var(--in) * 2.4); }
-.ws-field .blank { flex: 1; border-bottom: calc(var(--in) * 0.01) solid var(--ink); height: 1.1em; }
-.ws-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: calc(var(--in) * 0.2);
-}
-.ws-title h2 {
-  margin: 0;
-  font-size: calc(var(--in) * 20 / 72);
-  font-weight: 700;
-  line-height: 1.1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-}
-.ws-meta {
-  font-size: calc(var(--in) * 10 / 72);
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
-.ws-grid { display: grid; flex: none; }
+/* One stacked problem: the top number, then x and the bottom number over a rule. */
 .prob {
   justify-self: center;
   align-self: start;
@@ -262,32 +60,6 @@ button {
   border-bottom: 0.08em solid var(--ink);
   padding-bottom: 0.05em;
 }
-
-@media (max-width: 820px) {
-  .app { grid-template-columns: minmax(0, 1fr); }
-  .panel { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 24px 16px; }
-  .preview { padding: 24px 16px 40px; }
-}
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
-
-/* ---------- Print: only the sheets, one per page ---------- */
-@media print {
-  @page { size: letter; margin: 0; }
-  html, body { background: #fff; }
-  .panel, .page-label { display: none !important; }
-  .app { display: block; min-height: 0; }
-  .preview { display: block; padding: 0; }
-  .sheet-wrap { width: 8.5in; container-type: normal; }
-  .paper {
-    --in: 1in;
-    width: 8.5in;
-    height: 10.97in;
-    aspect-ratio: auto;
-    box-shadow: none;
-    break-after: page;
-  }
-  .sheet-wrap:last-child .paper { break-after: auto; }
-}
 </style>
 </head>
 <body>
@@ -296,6 +68,7 @@ button {
     <div class="brand">
       <h1>Times Table Worksheets</h1>
       <p>Pick the times tables, then click Print worksheet. The sheet updates as you type.</p>
+      <p class="cross-link"><a href="division/">Division worksheets</a></p>
     </div>
 
     <form id="settings" novalidate>
@@ -331,7 +104,7 @@ button {
 
       <fieldset>
         <legend>Sheet</legend>
-        <span class="label" id="pos-label" style="margin:0;text-transform:none;letter-spacing:0;font-weight:400;font-size:0.9rem;color:var(--text)">Times-table number goes</span>
+        <span class="seg-caption" id="pos-label">Times-table number goes</span>
         <div class="seg" role="radiogroup" aria-labelledby="pos-label">
           <label><input type="radio" name="pos" id="pos-top" value="top" checked><span>On top</span></label>
           <label><input type="radio" name="pos" id="pos-bottom" value="bottom"><span>On bottom</span></label>
@@ -354,248 +127,62 @@ button {
   <main class="preview" id="preview" aria-label="Worksheet preview"></main>
 </div>
 
+<script src="worksheet-core.js"></script>
+<script src="worksheet-ui.js"></script>
 <script>
 (function () {
   "use strict";
 
-  const STORE_KEY = "times-table-worksheets:v1";
-  const $ = (id) => document.getElementById(id);
+  // Shared logic lives in worksheet-core.js (pure) and worksheet-ui.js (DOM).
+  const C = window.WorksheetCore, UI = window.WorksheetUI, $ = UI.$;
+  const TABLES_HINT = "One or more, like 4 or 3, 4, 6 or 2-5";
+  const TABLES_ERRORS = {
+    empty: "Enter at least one times table, like 4.",
+    format: "Use whole numbers from 0 to 99, like 4 or 3, 4, 6 or 2-5."
+  };
+  // Room one stacked problem needs, in em: width, and height plus space for the answer.
+  const SIZE = { emPerCol: 3.4, emPerRow: 4.6, maxFont: 26 };
 
-  // Sheet geometry in points (72 pt = 1 in). Letter page, 0.5 in margins.
-  const GRID_W = 7.5 * 72;                    // 540 pt
-  const GRID_H = (10 - 1.05 - 0.15) * 72;     // 633.6 pt below the header
-  const EM_PER_COL = 3.4;                     // horizontal room one problem needs
-  const EM_PER_ROW = 4.6;                     // problem plus space to write the answer
-  const MAX_FONT = 26;
-  const MIN_ONE_PAGE_FONT = 11;
-  const PAGED_FONT = 13;
-
-  let seed = newSeed();
-
-  function newSeed() { return (Math.random() * 2 ** 32) >>> 0; }
-
-  // Small seeded generator so editing the title doesn't reshuffle the sheet.
-  function mulberry32(a) {
-    return function () {
-      a |= 0; a = (a + 0x6D2B79F5) | 0;
-      let t = Math.imul(a ^ (a >>> 15), 1 | a);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
-
-  function shuffle(arr, rand) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(rand() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  }
-
-  function parseTables(str) {
-    const cleaned = str.replace(/\s*[-–]\s*/g, "-").trim();
-    if (!cleaned) return { error: "Enter at least one times table, like 4." };
-    const out = new Set();
-    for (const tok of cleaned.split(/[,\s]+/).filter(Boolean)) {
-      const m = /^(\d{1,2})(?:-(\d{1,2}))?$/.exec(tok);
-      if (!m) return { error: "Use whole numbers from 0 to 99, like 4 or 3, 4, 6 or 2-5." };
-      let a = +m[1], b = m[2] === undefined ? a : +m[2];
-      if (a > b) [a, b] = [b, a];
-      for (let n = a; n <= b; n++) out.add(n);
-    }
-    return { tables: [...out].sort((x, y) => x - y) };
-  }
-
-  function readInt(id, min, max) {
-    const v = $(id).value.trim();
-    if (!/^\d+$/.test(v)) return null;
-    const n = +v;
-    return n >= min && n <= max ? n : null;
-  }
-
-  // Facts are dealt in shuffled rounds so every fact shows up about equally,
-  // and the same problem never appears twice in a row.
-  function dealProblems(facts, total, rand) {
-    const out = [];
-    while (out.length < total) {
-      const round = shuffle(facts.slice(), rand);
-      const last = out[out.length - 1];
-      if (last && round.length > 1 && round[0] === last) {
-        const k = 1 + Math.floor(rand() * (round.length - 1));
-        [round[0], round[k]] = [round[k], round[0]];
-      }
-      out.push(...round);
-    }
-    return out.slice(0, total);
-  }
-
-  function tableLabel(tables) {
-    // Collapse runs of 3+ consecutive tables: 2s–12s.
-    const parts = [];
-    for (let i = 0; i < tables.length; ) {
-      let j = i;
-      while (j + 1 < tables.length && tables[j + 1] === tables[j] + 1) j++;
-      if (j - i >= 2) { parts.push(tables[i] + "s–" + tables[j] + "s"); }
-      else { for (let k = i; k <= j; k++) parts.push(tables[k] + "s"); }
-      i = j + 1;
-    }
-    if (parts.length === 1) return parts[0];
-    if (parts.length === 2) return parts[0] + " and " + parts[1];
-    return parts.slice(0, -1).join(", ") + ", and " + parts[parts.length - 1];
-  }
-
-  function layout(cols, rows) {
-    const maxFont = Math.min(MAX_FONT, GRID_W / (cols * EM_PER_COL));
-    const oneFont = Math.min(maxFont, GRID_H / (rows * EM_PER_ROW));
-    if (oneFont >= Math.min(MIN_ONE_PAGE_FONT, maxFont)) {
-      return { font: oneFont, rowsPerPage: rows, pages: 1 };
-    }
-    const font = Math.min(maxFont, PAGED_FONT);
-    const rowsPerPage = Math.max(1, Math.floor(GRID_H / (font * EM_PER_ROW)));
-    return { font, rowsPerPage, pages: Math.ceil(rows / rowsPerPage) };
-  }
-
-  function setMsg(el, text, isError, inputs) {
-    el.textContent = text;
-    el.hidden = !text;
-    el.className = isError ? "err" : "hint";
-    inputs.forEach((i) => i.setAttribute("aria-invalid", isError ? "true" : "false"));
-  }
-
-  function el(tag, cls, text) {
-    const n = document.createElement(tag);
-    if (cls) n.className = cls;
-    if (text !== undefined) n.textContent = text;
-    return n;
-  }
-
-  function buildHeader(title, meta) {
-    const head = el("header", "ws-head");
-    const fields = el("div", "ws-fields");
-    for (const [cls, lab] of [["name", "Name"], ["date", "Date"]]) {
-      const f = el("div", "ws-field " + cls);
-      f.append(el("span", "", lab), el("span", "blank"));
-      fields.append(f);
-    }
-    const row = el("div", "ws-title");
-    row.append(el("h2", "", title), el("span", "ws-meta", meta));
-    head.append(fields, row);
-    return head;
-  }
-
-  function buildProblem(a, b) {
-    const p = el("div", "prob");
-    const n2 = el("div", "n2");
-    n2.append(el("span", "x", "×"), el("span", "", String(b)));
-    p.append(el("div", "n1", String(a)), n2);
+  function buildProblem([a, b]) {
+    const p = UI.el("div", "prob");
+    const n2 = UI.el("div", "n2");
+    n2.append(UI.el("span", "x", "×"), UI.el("span", "", String(b)));
+    p.append(UI.el("div", "n1", String(a)), n2);
     return p;
   }
 
-  function render() {
-    const tablesMsg = $("tables-msg");
-    const parsed = parseTables($("tables").value);
-    if (parsed.error) setMsg(tablesMsg, parsed.error, true, [$("tables")]);
-    else setMsg(tablesMsg, "One or more, like 4 or 3, 4, 6 or 2-5", false, [$("tables")]);
+  function render(seed) {
+    // Check every field first so all errors show at once.
+    const parsed = C.parseNumberList($("tables").value, 0);
+    UI.setMsg($("tables-msg"), parsed.error ? TABLES_ERRORS[parsed.error] : TABLES_HINT, !!parsed.error, [$("tables")]);
+    const range = UI.readRange();
+    const grid = UI.readGrid(15);
+    if (parsed.error || !range || !grid) return false;
 
-    const from = readInt("from", 0, 99), to = readInt("to", 0, 99);
-    let rangeErr = "";
-    if (from === null || to === null) rangeErr = "Use whole numbers from 0 to 99.";
-    else if (from > to) rangeErr = "The first number should be less than or equal to the second.";
-    setMsg($("range-msg"), rangeErr, !!rangeErr, [$("from"), $("to")]);
+    const tables = parsed.numbers;
+    const facts = C.multiplicationFacts(tables, range.from, range.to, $("pos-top").checked);
+    const total = grid.cols * grid.rows;
+    const problems = C.dealProblems(facts.map((_, i) => i), total, C.mulberry32(seed)).map((i) => facts[i]);
 
-    const cols = readInt("cols", 1, 15), rows = readInt("rows", 1, 60);
-    let gridErr = "";
-    if (cols === null) gridErr = "Problems per row: use 1 to 15.";
-    else if (rows === null) gridErr = "Rows: use 1 to 60.";
-    setMsg($("grid-msg"), gridErr, !!gridErr, [$("cols"), $("rows")]);
-
-    const ok = !parsed.error && !rangeErr && !gridErr;
-    $("print").disabled = !ok;
-    if (!ok) { $("summary").textContent = "Fix the highlighted setting to update the sheet."; return; }
-
-    const tables = parsed.tables;
-    const onTop = $("pos-top").checked;
-    const facts = [];
-    for (const t of tables) for (let m = from; m <= to; m++) facts.push(onTop ? [t, m] : [m, t]);
-
-    const total = cols * rows;
-    const problems = dealProblems(facts.map((_, i) => i), total, mulberry32(seed)).map((i) => facts[i]);
-
-    const autoTitle = "Multiplication: " + tableLabel(tables);
+    const autoTitle = "Multiplication: " + C.listLabel(tables, "s");
     $("title").placeholder = autoTitle;
-    const title = $("title").value.trim() || autoTitle;
-    const L = layout(cols, rows);
-    const rowH = GRID_H / L.rowsPerPage;
-
-    // Summary
-    const each = Math.floor(total / facts.length), extra = total % facts.length;
-    let cover;
-    if (total < facts.length) cover = "Uses " + total + " of " + facts.length + " facts, each once.";
-    else if (extra === 0) cover = "Each fact appears " + each + (each === 1 ? " time." : " times.");
-    else cover = "Each fact appears " + each + " or " + (each + 1) + " times.";
-    const s = $("summary");
-    s.replaceChildren(
-      el("strong", "", total + " problems"), document.createTextNode(" from "),
-      el("strong", "", facts.length + (facts.length === 1 ? " fact" : " facts")),
-      document.createTextNode(". " + cover + (L.pages > 1 ? " Fills " + L.pages + " pages." : ""))
-    );
-
-    // Pages
-    const frag = document.createDocumentFragment();
-    for (let p = 0; p < L.pages; p++) {
-      const wrap = el("section", "sheet-wrap");
-      if (L.pages > 1) wrap.append(el("p", "page-label", "Page " + (p + 1) + " of " + L.pages));
-      const paper = el("div", "paper");
-      const rangeText = "× " + from + " to " + to;
-      const meta = rangeText + "  ·  " + total + " problems" + (L.pages > 1 ? "  ·  page " + (p + 1) + " of " + L.pages : "");
-      paper.append(buildHeader(title, meta));
-
-      const grid = el("div", "ws-grid");
-      const startRow = p * L.rowsPerPage;
-      const pageRows = Math.min(L.rowsPerPage, rows - startRow);
-      grid.style.gridTemplateColumns = "repeat(" + cols + ", 1fr)";
-      grid.style.gridTemplateRows = "repeat(" + pageRows + ", calc(var(--in) * " + (rowH / 72).toFixed(4) + "))";
-      grid.style.fontSize = "calc(var(--in) * " + (L.font / 72).toFixed(4) + ")";
-      for (let i = startRow * cols; i < (startRow + pageRows) * cols; i++) {
-        grid.append(buildProblem(problems[i][0], problems[i][1]));
-      }
-      paper.append(grid);
-      wrap.append(paper);
-      frag.append(wrap);
-    }
-    $("preview").replaceChildren(frag);
-    save();
+    UI.renderSheets({
+      problems, factCount: facts.length, cols: grid.cols, rows: grid.rows,
+      layout: C.layout(grid.cols, grid.rows, SIZE),
+      title: $("title").value.trim() || autoTitle,
+      rangeText: "× " + range.from + " to " + range.to,
+      buildProblem
+    });
+    return true;
   }
 
-  // Remember settings between visits (optional; ignored if storage is blocked).
-  function save() {
-    try {
-      localStorage.setItem(STORE_KEY, JSON.stringify({
-        tables: $("tables").value, from: $("from").value, to: $("to").value,
-        cols: $("cols").value, rows: $("rows").value, title: $("title").value,
-        pos: $("pos-top").checked ? "top" : "bottom", seed
-      }));
-    } catch (e) { /* storage unavailable */ }
-  }
-  function restore() {
-    try {
-      const d = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
-      if (!d) return;
-      for (const k of ["tables", "from", "to", "cols", "rows", "title"]) if (typeof d[k] === "string") $(k).value = d[k];
-      if (d.pos === "bottom") $("pos-bottom").checked = true;
-      if (Number.isInteger(d.seed)) seed = d.seed >>> 0;
-    } catch (e) { /* storage unavailable */ }
-  }
-
-  let timer;
-  $("settings").addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(render, 120); });
-  $("settings").addEventListener("submit", (e) => e.preventDefault());
-  $("shuffle").addEventListener("click", () => { seed = newSeed(); render(); });
-  $("print").addEventListener("click", () => window.print());
-
-  restore();
-  render();
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(render);
+  UI.start({
+    storeKey: "times-table-worksheets:v1",
+    fields: ["tables", "from", "to", "cols", "rows", "title"],
+    render,
+    getExtra: () => ({ pos: $("pos-top").checked ? "top" : "bottom" }),
+    applyExtra: (d) => { if (d.pos === "bottom") $("pos-bottom").checked = true; }
+  });
 })();
 </script>
 </body>
