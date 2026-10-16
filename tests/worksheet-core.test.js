@@ -4,6 +4,8 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const C = require("../worksheet-core.js");
 
+const range = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => from + i);
+
 test("parseNumberList accepts single numbers, lists, and ranges", () => {
   assert.deepEqual(C.parseNumberList("4", 0), { numbers: [4] });
   assert.deepEqual(C.parseNumberList("6, 3 4", 0), { numbers: [3, 4, 6] });
@@ -77,24 +79,53 @@ test("listLabel reads naturally with and without a suffix", () => {
   assert.equal(C.listLabel([2, 3, 4, 5], ""), "2–5");
 });
 
-test("divisionWidths grows with the biggest numbers", () => {
-  const small = C.divisionWidths(C.divisionFacts([4], 1, 10));
-  const big = C.divisionWidths(C.divisionFacts([12], 1, 99));
-  assert.equal(small.cols.length, 5);
-  assert.ok(big.total > small.total);
+test("longDivisionSize grows with the biggest numbers", () => {
+  const small = C.longDivisionSize(C.divisionFacts([4], 1, 10));
+  const big = C.longDivisionSize(C.divisionFacts([12], 1, 99));
+  // Two columns, divisor and dividend: the answer sits over the dividend.
+  assert.equal(small.cols.length, 2);
+  assert.ok(big.cols[0] > small.cols[0], "a 2-digit divisor needs a wider column");
+  assert.ok(big.cols[1] > small.cols[1], "a 4-digit dividend needs a wider column");
+  assert.ok(big.emPerCol > small.emPerCol);
+  assert.equal(big.emPerRow, small.emPerRow);   // always two lines, whatever the numbers
+  // The page pads with the CSS variables, so they must be the numbers the
+  // columns were sized with: with the paddings taken out, each column holds
+  // the same room per digit (2-digit dividends over 1-digit divisors here,
+  // 4 over 2 in the big one), and --cols is the widths themselves.
+  const room = (size, col, pads) => size.cols[col] - pads.reduce((sum, k) => sum + parseFloat(size.vars[k]), 0);
+  for (const [size, dividendDigits, divisorDigits] of [[small, 2, 1], [big, 4, 2]]) {
+    const perDigit = room(size, 0, ["--divisor-gap"]) / divisorDigits;
+    assert.ok(Math.abs(room(size, 1, ["--bracket", "--dividend-pad"]) / dividendDigits - perDigit) < 1e-9);
+    assert.equal(size.vars["--cols"], size.cols.map((w) => w.toFixed(3) + "em").join(" "));
+  }
 });
 
 test("layout keeps default sheets on one page and splits tall ones", () => {
-  const times = { emPerCol: 3.4, emPerRow: 4.6, maxFont: 26 };
-  assert.equal(C.layout(10, 10, times).pages, 1);
-  const tall = C.layout(12, 40, times);
+  assert.equal(C.layout(10, 10, C.STACKED_SIZE).pages, 1);
+  const tall = C.layout(12, 40, C.STACKED_SIZE);
   assert.equal(tall.pages, 4);
   assert.ok(tall.rowsPerPage * tall.pages >= 40);
 
-  const divEm = C.divisionWidths(C.divisionFacts([4], 1, 10)).total + 1.2;
-  const div = C.layout(4, 10, { emPerCol: divEm, emPerRow: 2.6, maxFont: 24 });
+  const div = C.layout(4, 10, C.longDivisionSize(C.divisionFacts([4], 1, 10)));
   assert.equal(div.pages, 1);
   assert.ok(div.font >= 14);
+});
+
+test("both division layouts fit 10 rows of 10 on one page", () => {
+  // Stacked problems are one fixed size, the same as the times table page's.
+  assert.ok(C.maxColsFor(C.STACKED_SIZE.emPerCol) >= 10);
+  const stacked = C.layout(10, 10, C.STACKED_SIZE);
+  assert.equal(stacked.pages, 1);
+  assert.ok(stacked.font >= 13, `stacked font ${stacked.font}`);
+  // Long division, on the default sheet and with every divisor from 1 to 12
+  // and answers from 0 to 12 (dividends up to 144).
+  for (const facts of [C.divisionFacts([4], 1, 10), C.divisionFacts(range(1, 12), 0, 12)]) {
+    const size = C.longDivisionSize(facts);
+    assert.ok(C.maxColsFor(size.emPerCol) >= 10);
+    const L = C.layout(10, 10, size);
+    assert.equal(L.pages, 1);
+    assert.ok(L.font >= 11, `long division font ${L.font}`);
+  }
 });
 
 test("pageSlices puts every problem on exactly one page, in order", () => {
@@ -107,11 +138,13 @@ test("pageSlices puts every problem on exactly one page, in order", () => {
 });
 
 test("pageSlices makes as many pages as layout says", () => {
-  const times = { emPerCol: 3.4, emPerRow: 4.6, maxFont: 26 };
-  for (const [cols, rows] of [[10, 10], [12, 40], [15, 60], [1, 1], [7, 33]]) {
-    const L = C.layout(cols, rows, times);
-    const pages = C.pageSlices([...Array(cols * rows).keys()], cols, L.rowsPerPage);
-    assert.equal(pages.length, L.pages, `${cols} x ${rows}`);
+  const long = C.longDivisionSize(C.divisionFacts([2, 99], 0, 99));
+  for (const size of [C.STACKED_SIZE, long]) {
+    for (const [cols, rows] of [[10, 10], [12, 40], [15, 60], [1, 1], [7, 33]]) {
+      const L = C.layout(cols, rows, size);
+      const pages = C.pageSlices([...Array(cols * rows).keys()], cols, L.rowsPerPage);
+      assert.equal(pages.length, L.pages, `${cols} x ${rows}`);
+    }
   }
 });
 
@@ -122,13 +155,15 @@ test("coverageText describes how often facts repeat", () => {
   assert.equal(C.coverageText(45, 10), "Each fact appears 4 or 5 times.");
 });
 
-test("maxColsFor keeps wide division sheets at 11 pt or more", () => {
-  const em = (divisors, to) => C.divisionWidths(C.divisionFacts(divisors, 0, to)).total + 1.2;
-  const narrow = C.maxColsFor(em([4], 10));
-  const wide = C.maxColsFor(em([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 12));
-  assert.ok(wide < narrow);
-  for (const [cols, e] of [[narrow, em([4], 10)], [wide, em([12], 12)]]) {
-    const font = C.layout(cols, 60, { emPerCol: e, emPerRow: 2.6, maxFont: 24 }).font;
+test("maxColsFor keeps wide long division at 11 pt or more", () => {
+  const narrow = C.longDivisionSize(C.divisionFacts([4], 0, 10));
+  const wide = C.longDivisionSize(C.divisionFacts([2, 99], 0, 99));   // 4-digit dividends, like 99)9801
+  const narrowCols = C.maxColsFor(narrow.emPerCol), wideCols = C.maxColsFor(wide.emPerCol);
+  assert.ok(wideCols < narrowCols);
+  // The division page caps rows at 10 problems; only numbers this big lower it, to 9.
+  assert.equal(wideCols, 9);
+  for (const [cols, size] of [[narrowCols, narrow], [wideCols, wide]]) {
+    const font = C.layout(cols, 60, size).font;
     assert.ok(font >= 11, `font ${font} too small at ${cols} per row`);
   }
   assert.equal(C.maxColsFor(1000), 1);

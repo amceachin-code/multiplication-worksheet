@@ -6,7 +6,7 @@ A one-page web app that builds printable multiplication worksheets.
 
 **Division worksheets:** https://www.andrew-mceachin.com/multiplication-worksheet/division/
 
-A partner page in `division/` builds division sheets the same way. Problems read `24 ÷ 4 = ___`, and every answer is a whole number.
+A partner page in `division/` builds division sheets the same way. Problems can be stacked like the times table sheet or set up as long division, and every answer is a whole number.
 
 ## Use it
 
@@ -28,16 +28,19 @@ A partner page in `division/` builds division sheets the same way. Problems read
 
 - `division/index.html` is the page.
 - Set the numbers to divide by (`4`, `3, 4, 6`, or `2-5`; zero is refused) and the range of answers. Each fact is a times-table fact run backward, so there are no remainders.
-- Wider problems allow fewer per row (up to 6 for one-digit divisors, 5 for 2 to 12), so the type stays readable.
-- Settings are stored under their own key, separate from the times table page.
+- The Sheet section has a **Layout** choice: **Division symbol** (the default) or **Long division**. Division symbol stacks problems like the times table sheet: the dividend on top, then ÷ and the divisor under it, then a rule, with the answer written below.
+- Long division shows the divisor, then a bracket with a bar over the dividend, and the answer goes above the bar. The dividend sits right after the bracket, and the bar is as long as the number under it. It shows the same facts a different way, so there are no remainders here either.
+- Problems per row go up to 10, so 10 rows of 10 (100 problems) fit on one letter page in either layout. Long division with very wide numbers (4-digit dividends, like 9801 ÷ 99) allows up to 9 per row, so the type stays at 11 pt or more. The default is 4 per row by 10 rows.
+- Settings, including the layout, are stored under their own key, separate from the times table page.
 
 ## Answer key
 
 - Both pages have an **Answer key** switch in the Sheet section. It starts off on every visit and isn't saved with the other settings, so nobody prints a key by accident.
 - With it on, all worksheet pages print first, then matching key pages in the same order. A one-page worksheet prints 2 pages, and a three-page one prints 6. The button reads **Print worksheet and key**.
 - Print one-sided, or the key lands on the back of the worksheet.
-- Key pages look like the worksheet with the answers filled in, in bold black. The Name and Date line becomes an "Answer key" label. Times table answers sit under the rule, lined up on the right. Division answers sit on the blank line, and the line doesn't move.
+- Key pages look like the worksheet with the answers filled in, in bold black. The Name and Date line becomes an "Answer key" label. Times table answers and division symbol answers sit under the rule, lined up on the right. Long division answers sit above the bar, with the answer's last digit over the dividend's last digit. Nothing on the page moves between the worksheet and the key.
 - Every worksheet and key page shows a short sheet code at the right end of the Name and Date line, like "Sheet K7HF". It comes from the problems, their order, and the grid and page split, so a key can always be matched to the sheet in hand, even one printed on another day.
+- On the division page, the code doesn't depend on the layout. The same problems in the same spots get the same code either way, because each answer goes with the same spot on the grid. So a key printed in one layout works for a worksheet printed in the other if the codes match.
 
 How the key stays right:
 
@@ -49,18 +52,18 @@ How the key stays right:
 
 Both pages share three files at the repo root:
 
-- `worksheet.css`: colors, panel, paper, and print styles. Each page keeps only its own problem layout inline.
-- `worksheet-core.js`: parsing, fact building, dealing, layout math, and the answer key checks. No DOM, so Node can test it.
-- `worksheet-ui.js`: builds the sheet and key in the page, saves settings, and wires up the buttons.
+- `worksheet.css`: colors, panel, paper, and print styles, plus the stacked problem and the two-choice switch (segmented control) that both pages use. The division page keeps only its long-division styles inline.
+- `worksheet-core.js`: parsing, fact building, dealing, layout math, long division sizing, and the answer key checks for all three printed forms (stacked times tables, stacked division, and long division). No DOM, so Node can test it.
+- `worksheet-ui.js`: builds the sheet and key in the page (including the stacked problem for both pages), saves settings, and wires up the buttons.
 
-Run the tests (Node 18 or later, nothing to install): `node --test tests/*.test.js`
+Run the 31 tests (Node 18 or later, nothing to install): `node --test tests/*.test.js`
 
-- `tests/worksheet-core.test.js` covers parsing, fact building, dealing, and layout.
-- `tests/answer-key.test.js` covers the answer key checks. It checks every possible fact (all 20,000 times table facts, 0 to 99 by 0 to 99 in both orders, and all 9,900 division facts) using repeated addition and subtraction rather than `*` and `/`. It also makes 425 single-change mutations to a sheet and key, and the check must reject every one.
+- `tests/worksheet-core.test.js` covers parsing, fact building, dealing, and layout. It also checks that both division layouts fit 10 rows of 10 on one page.
+- `tests/answer-key.test.js` covers the answer key checks. It checks every possible fact (all 20,000 times table facts, 0 to 99 by 0 to 99 in both orders, and all 9,900 division facts) using repeated addition and subtraction rather than `*` and `/`. It runs every read-back check on all three printed forms. It makes 640 single-change mutations to a sheet and key (214 for times tables, 214 for stacked division, and 212 for long division), and the check must reject every one. It also checks that an unknown operation or format is refused.
 
 ## Hosting
 
 - GitHub Pages serves the site from `main`, root folder.
 - It lives at https://www.andrew-mceachin.com/multiplication-worksheet/ because the user site (`amceachin-code.github.io`) carries that custom domain. Old github.io links redirect there.
 - The Students & Guardians page links to both tools: https://www.andrew-mceachin.com/tools/
-- `og-image.png` and `division/og-image.png` are the link preview images, 1200x630 light-mode screenshots. Regenerate them when the layout changes.
+- `og-image.png` and `division/og-image.png` are the link preview images, 1200x630 light-mode screenshots. Regenerate them when the page design changes.

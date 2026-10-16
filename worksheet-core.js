@@ -17,9 +17,21 @@
   const MIN_ONE_PAGE_FONT = 11;               // below this, split across pages instead
   const PAGED_FONT = 13;                      // font size once a sheet splits
 
-  // Division problem widths, in em.
-  const DIGIT_EM = 0.62;                      // one tabular digit in Andika
-  const SIGN_EM = 1.1;                        // ÷ or = with a little air on each side
+  // Room one stacked problem needs, in em, on both pages: its width (2.8 em in
+  // worksheet.css) plus space to the next problem, and three lines (two numbers
+  // and the answer) plus space to the next row. maxFont caps small grids.
+  const STACKED_SIZE = Object.freeze({ emPerCol: 3.4, emPerRow: 4.6, maxFont: 26 });
+
+  // Long-division problem sizes, in em. The three paddings reach the page's
+  // styles (.longdiv in division/index.html) as CSS variables from
+  // longDivisionSize, so the columns and the room inside them can't drift apart.
+  const DIGIT_EM = 0.62;                      // one tabular digit in Andika (0.586) plus a margin
+  const DIVISOR_GAP_EM = 0.12;                // between the divisor and the bracket
+  const BRACKET_EM = 0.42;                    // the bracket's curve plus air before the digits
+  const DIVIDEND_PAD_EM = 0.15;               // air after the dividend, under the bar's right end
+  const LONG_GUTTER_EM = 0.9;                 // space between neighboring problems
+  const LONG_EM_PER_ROW = 3.6;                // answer line, bar, dividend, then air before the next row
+  const LONG_MAX_FONT = 24;
 
   /** Small seeded generator so editing the title doesn't reshuffle the sheet. */
   function mulberry32(a) {
@@ -123,18 +135,27 @@
   }
 
   /**
-   * Column widths in em for one division problem, sized to the largest numbers
-   * on the sheet so every problem lines up: [dividend, ÷, divisor, =, blank].
-   * The blank is at least 2 digits wide so small answers still have room.
+   * Room one long-division problem needs, for layout() and maxColsFor(), plus
+   * its column widths in em: [divisor, dividend]. Widths come from the largest
+   * numbers on the sheet, so every problem lines up with its neighbors. The
+   * dividend column includes the bracket on its left. The answer sits above
+   * the dividend and never has more digits than it (the divisor is at least
+   * 1), so it needs no column of its own. `vars` are the CSS custom properties
+   * the page sets on each grid: the column widths and the paddings they were
+   * sized with.
    */
-  function divisionWidths(facts) {
+  function longDivisionSize(facts) {
     const digits = (n) => String(n).length;
-    let dd = 1, dv = 1, q = 1;
-    for (const [a, b, c] of facts) {
-      dd = Math.max(dd, digits(a)); dv = Math.max(dv, digits(b)); q = Math.max(q, digits(c));
-    }
-    const cols = [dd * DIGIT_EM, SIGN_EM, dv * DIGIT_EM, SIGN_EM, Math.max(2, q) * DIGIT_EM + 1.0];
-    return { cols, total: cols.reduce((s, w) => s + w, 0) };
+    let dd = 1, dv = 1;
+    for (const [a, b] of facts) { dd = Math.max(dd, digits(a)); dv = Math.max(dv, digits(b)); }
+    const cols = [dv * DIGIT_EM + DIVISOR_GAP_EM, BRACKET_EM + dd * DIGIT_EM + DIVIDEND_PAD_EM];
+    const vars = {
+      "--cols": cols.map((w) => w.toFixed(3) + "em").join(" "),
+      "--divisor-gap": DIVISOR_GAP_EM + "em",
+      "--bracket": BRACKET_EM + "em",
+      "--dividend-pad": DIVIDEND_PAD_EM + "em"
+    };
+    return { cols, vars, emPerCol: cols[0] + cols[1] + LONG_GUTTER_EM, emPerRow: LONG_EM_PER_ROW, maxFont: LONG_MAX_FONT };
   }
 
   /**
@@ -222,7 +243,10 @@
    * Four-character code printed on every worksheet and key page, so anyone can
    * match a key to the sheet in hand, even across shuffles or later visits. It
    * covers everything that decides what lands where: the operation, the grid
-   * width, the page split, and every problem's numbers in order.
+   * width, the page split, and every problem's numbers in order. The problem
+   * format (stacked or long division) is left out on purpose: it changes how a
+   * problem looks, not which answer goes where, so a key in either format
+   * answers a worksheet in the other, and matching codes say so.
    */
   function sheetCode(op, cols, rowsPerPage, problems) {
     let s = op + "|" + cols + "|" + rowsPerPage;
@@ -239,23 +263,31 @@
     return code;
   }
 
-  // What each problem must contain, in order, as data-part names. Signs must be
-  // exactly these characters, so a division sheet can never pass as times tables.
-  const PARTS = { "×": ["a", "sign", "b", "answer"], "÷": ["a", "sign", "b", "sign", "answer"] };
-  const SIGNS = { "×": ["×"], "÷": ["÷", "="] };
+  // What each problem must contain, in order, as data-part names, and the signs
+  // it must print, by operation and problem format. Signs must be exactly
+  // these characters, so a division sheet can never pass as times tables. Long
+  // division prints no sign text (its bracket is drawn in CSS), so the check
+  // knows it by the order of its parts instead: the divisor, then the answer
+  // and the dividend under it, as the page builds it.
+  const FORMS = {
+    "× stacked": { parts: ["a", "sign", "b", "answer"], signs: ["×"] },
+    "÷ stacked": { parts: ["a", "sign", "b", "answer"], signs: ["÷"] },
+    "÷ long": { parts: ["b", "answer", "a"], signs: [] }
+  };
 
   /**
-   * Check one problem as read from the page: the right parts in the right order,
-   * the right signs, no text outside the marked parts, and readable numbers.
-   * Returns the printed { a, b, answer } strings. Throws otherwise.
+   * Check one problem as read from the page against its form (from FORMS): the
+   * right parts in the right order, the right signs, no text outside the marked
+   * parts, and readable numbers. Returns the printed { a, b, answer } strings.
+   * Throws otherwise.
    */
-  function readProblem(op, cell, where) {
+  function readProblem(op, form, cell, where) {
     const parts = cell && Array.isArray(cell.parts) ? cell.parts : [];
     const names = parts.map((p) => p[0]).join(" ");
-    if (names !== PARTS[op].join(" ")) throw new Error(where + ": unexpected parts (" + names + ")");
+    if (names !== form.parts.join(" ")) throw new Error(where + ": unexpected parts (" + names + ")");
     if (cell.text !== parts.map((p) => p[1]).join("")) throw new Error(where + ": text outside the marked parts");
     const signs = parts.filter((p) => p[0] === "sign").map((p) => p[1]).join(" ");
-    if (signs !== SIGNS[op].join(" ")) throw new Error(where + ": unexpected signs (" + signs + ")");
+    if (signs !== form.signs.join(" ")) throw new Error(where + ": unexpected signs (" + signs + ")");
     const get = (name) => parts.find((p) => p[0] === name)[1];
     const a = get("a"), b = get("b");
     if (Number.isNaN(readWhole(a)) || Number.isNaN(readWhole(b))) throw new Error(where + ": unreadable number");
@@ -265,7 +297,8 @@
 
   /**
    * The read-back check, run on the built pages before they go on screen.
-   * sheet: { op, cols, rows, rowsPerPage } from the settings and layout.
+   * sheet: { op, format, cols, rows, rowsPerPage } from the settings and layout;
+   *   format is "stacked" or, for division, "long" (see FORMS).
    * sheetPages and keyPages: pages read back as plain text, each
    *   { grid, codes: [code text], cells: [{ text, parts: [[name, text], ...] }] }.
    * keyPages is null when the answer key is off; the worksheet is checked either way.
@@ -273,10 +306,12 @@
    * only when it positively confirms every problem, so empty or partial input fails.
    */
   function verifySheets(sheet, sheetPages, keyPages) {
-    const { op, cols, rows, rowsPerPage } = sheet;
+    const { op, format, cols, rows, rowsPerPage } = sheet;
     const fail = (where, what) => { throw new Error(where + ": " + what); };
     const count = (n) => Number.isInteger(n) && n >= 1;
-    if (!PARTS[op]) fail("sheet", "unknown operation " + op);
+    const formKey = op + " " + format;
+    const form = Object.hasOwn(FORMS, formKey) ? FORMS[formKey] : null;   // own keys only
+    if (!form) fail("sheet", "unknown operation or format (" + formKey + ")");
     if (!count(cols) || !count(rows) || !count(rowsPerPage)) fail("sheet", "bad grid size");
     const total = cols * rows, per = cols * rowsPerPage, pageCount = Math.ceil(rows / rowsPerPage);
     const hasCode = (page, code) => page && Array.isArray(page.codes) && page.codes.length === 1 && page.codes[0] === code;
@@ -292,7 +327,7 @@
       }
       page.cells.forEach((cell, i) => {
         const where = "worksheet page " + (p + 1) + ", problem " + (i + 1);
-        const { a, b, answer } = readProblem(op, cell, where);
+        const { a, b, answer } = readProblem(op, form, cell, where);
         if (answer !== "") fail(where, "an answer is showing");
         printed.push([a, b]);
       });
@@ -315,7 +350,7 @@
       }
       page.cells.forEach((cell, i) => {
         const at = where + ", problem " + (i + 1);
-        const { a, b, answer } = readProblem(op, cell, at);
+        const { a, b, answer } = readProblem(op, form, cell, at);
         const [sa, sb] = printed[p * per + i];
         if (a !== sa || b !== sb) fail(at, a + " " + op + " " + b + " differs from the worksheet's " + sa + " " + op + " " + sb);
         if (!checkAnswer(op, readWhole(a), readWhole(b), readWhole(answer))) {
@@ -326,8 +361,8 @@
   }
 
   return {
-    GRID_H, mulberry32, parseNumberList, multiplicationFacts, divisionFacts,
-    dealProblems, listLabel, divisionWidths, layout, maxColsFor, coverageText,
+    GRID_H, STACKED_SIZE, mulberry32, parseNumberList, multiplicationFacts, divisionFacts,
+    dealProblems, listLabel, longDivisionSize, layout, maxColsFor, coverageText,
     checkAnswer, readWhole, pageSlices, sheetCode, verifySheets
   };
 });

@@ -1,5 +1,6 @@
-/* Shared styles for the times table and division worksheet pages.
-   Each page keeps only its problem layout (and any page-only controls) inline.
+/* Shared styles for the times table and division worksheet pages, including
+   the stacked problem both pages print. A page keeps only styles no other
+   page uses inline (the division page's long-division problem).
 
    Layout: settings column on the left, letter-size paper preview on the right. Stacks on phones. */
 :root {
@@ -139,6 +140,30 @@ label.switch { flex-direction: row; align-items: center; gap: 10px; cursor: poin
 .switch input:checked { background: var(--text); border-color: var(--text); }
 .switch input:checked::before { background: var(--surface); transform: translateX(16px); }
 
+/* Two-choice segmented control (radio buttons drawn as one bar), like the
+   times table page's "Times-table number goes" and the division page's layout. */
+.seg-caption { font-size: 0.9rem; }
+.seg {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.seg label { position: relative; display: block; }
+.seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.seg span {
+  display: block;
+  text-align: center;
+  padding: 8px 6px;
+  font-size: 0.9rem;
+  background: var(--field);
+  cursor: pointer;
+}
+.seg label + label span { border-left: 1px solid var(--line); }
+.seg input:checked + span { background: var(--text); color: var(--surface); font-weight: 700; }
+.seg input:focus-visible + span { outline: 2px solid var(--blue); outline-offset: 2px; }
+
 .summary {
   font-size: 0.88rem;
   color: var(--muted);
@@ -254,6 +279,34 @@ button {
 }
 
 .ws-grid { display: grid; flex: none; }
+
+/* One stacked problem, on both pages: the top number, then the sign and the
+   bottom number over a rule. Built by WorksheetUI.stackedProblem. */
+.stacked {
+  justify-self: center;
+  align-self: start;
+  width: 2.8em;
+  padding-top: 0.35em;
+  line-height: 1.2;
+  text-align: right;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.stacked .n2 {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 0.08em solid var(--ink);
+  padding-bottom: 0.05em;
+}
+/* The answer spot under the rule: empty on the worksheet, filled on the answer
+   key. Rows already leave room for it, so nothing moves. Flex end keeps the
+   answer under the ones digits; if a wide fallback font makes 9801 wider than
+   the problem, it spills left into the cell's spare room, not into a neighbor. */
+.stacked .ans {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.12em;
+  font-weight: 700;
+}
 @media (max-width: 820px) {
   .app { grid-template-columns: minmax(0, 1fr); }
   .panel { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 24px 16px; }

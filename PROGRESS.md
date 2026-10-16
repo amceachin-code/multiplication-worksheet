@@ -1,5 +1,45 @@
 # Progress
 
+## 2026-10-16 (division layouts)
+
+### Changes
+
+- The division page allows up to 10 problems per row (it was 6, or 5 for numbers like 144 ÷ 12). 10 rows of 10 now fit on one letter page in both layouts.
+- Added a Layout choice to the Sheet section: "Division symbol" or "Long division". It is saved with the other settings. The default is Division symbol.
+- Division symbol problems are now stacked like the times table sheet: the dividend, then "÷ divisor" over a rule, with the answer below. The one-line `24 ÷ 4 = ___` format is gone. At 10 × 10, stacked problems print at about 13.8 pt (the same as the times table page).
+- Long division: the divisor, then a bracket and bar over the dividend, with the answer spot above the bar. The dividend sits next to the bracket, the bar fits the number, and the answer's last digit sits over the dividend's last digit. At 10 × 10 it prints at about 15.8 pt on the default sheet (÷ 4, answers 1 to 10), and 11.6 pt with every divisor from 1 to 12 and answers 0 to 12. With 4-digit dividends (like 9801 ÷ 99) it allows 9 per row, so type stays at 11 pt or more.
+- The bracket is drawn in CSS (the right border of a half-ellipse), so it needs no font glyph and looks the same in any font. The bar and the bracket are drawn from the same top edge, because browsers round border widths to whole pixels and a first version left the bracket sitting slightly above the bar.
+- Shared code: both pages now use one stacked-problem builder (`WorksheetUI.stackedProblem`), one set of stacked styles and the two-choice switch in `worksheet.css`, and one size (`WorksheetCore.STACKED_SIZE`). The times table page has no inline styles left. Before-and-after snapshots of 4 times table settings matched exactly: every number in the same spot.
+- Answer key check: `verifySheets` now takes the problem format. Its table of printed forms covers `× stacked`, `÷ stacked`, and `÷ long`. Long division prints no sign text, so the check knows it by the order of its parts (divisor, answer, dividend). An unknown operation or format fails the check. `longDivisionSize` replaces `divisionWidths`. It returns the column widths and the CSS variables the page uses for long-division spacing, so the spacing lives in one place.
+- Tests: 31 Node tests pass. The read-back tests run on all three printed forms: 640 single-change mutations (214 times tables, 214 division stacked, 212 long division), plus unknown operations and formats. New core tests check that both division layouts fit 10 rows of 10 on one page, that 4-digit long division caps at 9 per row at 11 pt or more, and that the spacing variables match the column widths.
+- Browser checks (headless Chrome): a sweep of 234 runs and 35,760 answers across both layouts, 5 ranges of facts (1- to 4-digit dividends), 9 grid sizes (including both sides of each page break), and 3 fonts: Andika, Avenir Next, and Verdana Bold (a deliberately wide font). Every answer was right, stayed in its own cell, and lined up (stacked: under the ones digit; long division: over the dividend's last digit). The divisor sat level with the dividend, and no rule or bar moved between worksheet and key. Answers cleared the rule by at least 0.26 em (stacked) and the bar by at least 0.18 em (long division). The sweep refused 36 settings as designed (10 per row with 4-digit long division asks for 1 to 9).
+- Print checks: four PDFs (a one-page and a three-page sheet in each layout). All 797 printed answers were recomputed correctly from `pdftotext` output, with worksheet pages first. With the page's own check switched off and a wrong answer planted, the PDF check caught it in both layouts.
+- Fault tests with the page's check on: a wrong answer in either layout left the key out and turned off Print. An answer on the worksheet, or long-division settings with problems built stacked, hid the whole sheet.
+- The layout choice survives a reload, the answer key still starts off, and the page works at phone width (375 px) and in dark mode.
+- Review pass (the user picked all four findings): removed two unused classes from the stacked builder, flattened the table of printed forms to one lookup, moved long-division spacing to one source (CSS variables from `longDivisionSize`), and read the layout setting in one place. Snapshots of both pages matched before and after, and the sweep and PDF checks reran clean.
+- Regenerated `division/og-image.png` (1200x630, light mode, default settings, scrollbars hidden), since the panel gained the Layout control and the problems are now stacked.
+
+### Decisions
+
+- Stacked ÷ instead of one line. One-line problems are too wide for 10 per row at a readable size (about 9 pt, with answer lines about 0.2 in long). The user picked stacked over two other options: keep one line and offer 10 × 10 only in long division, or one line in smaller type.
+- The cap is exactly 10 per row, as asked. The default grid stays 4 per row by 10 rows.
+- The sheet code ignores the layout on purpose. The same problems in the same spots have the same answers, so a key in either layout answers a worksheet in the other, and matching codes say so.
+- Long division is another way to show the same facts (no remainders). There is no extra work space beyond the row height. Fewer rows make taller rows, which leaves more room.
+- Dividends sit next to the bracket, with a bar that fits the number, rather than lined up on the right under a bar of fixed length (that left gaps like `3)    75`).
+- Built without a separate written plan, at the user's choice.
+
+### Files touched
+
+- `division/index.html`, `division/og-image.png`, `index.html`, `worksheet.css`, `worksheet-core.js`, `worksheet-ui.js`, `tests/answer-key.test.js`, `tests/worksheet-core.test.js`, `README.md`, `TODO.md`, `PROGRESS.md`
+
+### Next steps
+
+- Commit and push after the user reviews (nothing is committed yet).
+- Check the live division page in both layouts with the answer key on.
+- Print both layouts on a real printer, and from iPhone Safari and an Android phone.
+- Maybe mention the long-division option on the Students & Guardians tools page in `academic-site`.
+
+
 ## 2026-10-16 (answer key)
 
 ### Changes

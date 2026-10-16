@@ -21,35 +21,69 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
 <link rel="stylesheet" href="../worksheet.css">
 <style>
-/* Page-only styles. Shared layout, panel, paper, and print rules are in worksheet.css. */
+/* Page-only styles. Shared layout, panel, paper, print, and stacked problem
+   rules are in worksheet.css. */
 
-/* One horizontal problem: dividend ÷ divisor = blank. Column widths come from
-   --cols, set per sheet so every problem lines up with its neighbors. */
-.prob {
+/* One long-division problem: the divisor, then the answer spot over the
+   dividend under the bracket. WorksheetCore.longDivisionSize sets these on
+   each grid: --cols, column widths from the biggest numbers on the sheet, so
+   every bracket lines up with its neighbors, and --divisor-gap, --bracket, and
+   --dividend-pad, the room those widths allow for. --answer-h and --bar-room
+   are the answer row and the bar's room above the dividend. Items keep their
+   own heights (align-items: start); stretched, the answer row could grow and
+   push the bar down. */
+.longdiv {
+  --answer-h: 1.2em;
+  --bar-room: 0.14em;
   justify-self: center;
-  align-self: center;
+  align-self: start;
   display: grid;
   grid-template-columns: var(--cols);
-  align-items: baseline;
+  align-items: start;
+  padding-top: 0.35em;
   line-height: 1.2;
   font-variant-numeric: tabular-nums lining-nums;
 }
-.prob .num { text-align: right; }
-.prob .sign { text-align: center; }
-.prob .blank { position: relative; border-bottom: 0.07em solid var(--ink); height: 1em; margin-left: 0.15em; }
-/* The answer spot, inside the blank: empty on the worksheet, filled on the
-   answer key. It is positioned absolutely so it never becomes the blank's
-   baseline; an empty blank lines its bottom edge up with the numbers, and text
-   inside it would drop the line. This way the line sits exactly where the
-   worksheet has it. */
-.prob .ans {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0.08em;
-  text-align: center;
-  line-height: 1;
+/* The divisor, right next to the bracket. Its top padding is the answer row
+   plus the bar's room, so it sits level with the dividend. */
+.longdiv .dvr { padding: calc(var(--answer-h) + var(--bar-room)) var(--divisor-gap) 0 0; text-align: right; }
+/* The answer over the dividend. It hugs the bracket and is only as wide as the
+   dividend, so a short dividend sits next to the bracket, as it would be
+   written, and the bar is only as long as the number under it. The answer
+   lines up on the right, with its last digit over the dividend's last digit. */
+.longdiv .body { display: grid; justify-self: start; justify-items: end; }
+/* The answer spot: empty on the worksheet, filled on the answer key. Its fixed
+   height keeps the bar in the same place either way. */
+.longdiv .ans {
+  height: var(--answer-h);
+  padding-right: var(--dividend-pad);
   font-weight: 700;
+}
+/* The dividend, under the bar. Its top padding holds the bar, and its left
+   padding holds the bracket. */
+.longdiv .dvd {
+  position: relative;
+  padding: var(--bar-room) var(--dividend-pad) 0 var(--bracket);
+}
+/* The bar (::after) and the bracket (::before), drawn from the same top edge.
+   Browsers round border widths to whole pixels, so a bracket placed against
+   the dividend's own border would sit a little above it; this way they meet
+   exactly. The bracket is a ")" curve: the right border of a half-ellipse,
+   so it needs no font glyph and looks the same in any font. Its top border
+   lies on the bar, and its bottom end tapers off. */
+.longdiv .dvd::before, .longdiv .dvd::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-top: 0.08em solid var(--ink);
+}
+.longdiv .dvd::after { right: 0; }
+.longdiv .dvd::before {
+  bottom: 0;
+  width: 0.3em;
+  border-right: 0.08em solid var(--ink);
+  border-radius: 0 100% 100% 0 / 0 50% 50% 0;
 }
 </style>
 </head>
@@ -85,7 +119,7 @@
         <legend>Grid</legend>
         <div class="pair">
           <label for="cols">Problems per row
-            <input id="cols" type="number" inputmode="numeric" min="1" max="8" value="4">
+            <input id="cols" type="number" inputmode="numeric" min="1" max="10" value="4">
           </label>
           <label for="rows">Rows
             <input id="rows" type="number" inputmode="numeric" min="1" max="60" value="10">
@@ -96,6 +130,11 @@
 
       <fieldset>
         <legend>Sheet</legend>
+        <span class="seg-caption" id="format-label">Layout</span>
+        <div class="seg" role="radiogroup" aria-labelledby="format-label">
+          <label><input type="radio" name="format" id="format-stacked" value="stacked" checked><span>Division symbol</span></label>
+          <label><input type="radio" name="format" id="format-long" value="long"><span>Long division</span></label>
+        </div>
         <label for="title">Title (optional)
           <input id="title" type="text" autocomplete="off" placeholder="Dividing by 4">
         </label>
@@ -134,36 +173,46 @@
     format: "Use whole numbers from 1 to 99, like 4 or 3, 4, 6 or 2-5.",
     below: "You can't divide by 0. Use numbers from 1 to 99."
   };
-  const EM_PER_ROW = 2.6;                     // one line of text plus room to write
-  const COL_GUTTER_EM = 1.2;                  // space between neighboring problems
-  const MAX_FONT = 24;
-  const MAX_COLS = 8;                         // hard cap; narrower problems may allow fewer
+  const MAX_COLS = 10;                        // hard cap; very wide long division may allow fewer
 
-  // One problem reads "24 ÷ 4 = ____". The quotient prints on the line only on
-  // answer key pages (showAnswer must be exactly true, so a stray argument can't
-  // leak answers). data-part marks each piece so the answer key check can read it back.
-  function buildProblem([dividend, divisor, quotient], showAnswer) {
-    const p = UI.el("div", "prob");
-    const blank = UI.el("span", "blank");
-    blank.append(UI.part("span", "ans", "answer", showAnswer === true ? String(quotient) : ""));
-    p.append(
-      UI.part("span", "num", "a", String(dividend)), UI.part("span", "sign", "sign", "÷"),
-      UI.part("span", "num", "b", String(divisor)), UI.part("span", "sign", "sign", "="),
-      blank
-    );
-    return p;
-  }
+  /** The chosen layout, by the format name the answer key check knows it by. */
+  const readFormat = () => ($("format-long").checked ? "long" : "stacked");
+
+  // The two layouts, keyed by format. Division symbol: a stacked problem like
+  // the times table page, "24" over "÷ 4" over a rule, with the answer under it
+  // (shared code and styles). Long division: "4)24" with the answer spot over
+  // the bar. The divisor comes first, then a body holding the answer above the
+  // dividend, so the answer can line up with the dividend's last digit (see
+  // .longdiv in the styles above). Either way the quotient prints only on
+  // answer key pages (showAnswer must be exactly true, so a stray argument
+  // can't leak answers), and data-part marks each piece so the answer key
+  // check can read it back.
+  const BUILDERS = {
+    stacked: (problem, showAnswer) => UI.stackedProblem("÷", problem, showAnswer),
+    long([dividend, divisor, quotient], showAnswer) {
+      const p = UI.el("div", "longdiv");
+      const body = UI.el("span", "body");
+      body.append(
+        UI.part("span", "ans", "answer", showAnswer === true ? String(quotient) : ""),
+        UI.part("span", "dvd", "a", String(dividend))
+      );
+      p.append(UI.part("span", "dvr", "b", String(divisor)), body);
+      return p;
+    }
+  };
 
   function render(seed) {
     // Check every field first so all errors show at once.
     const parsed = C.parseNumberList($("divisors").value, 1);
     UI.setMsg($("divisors-msg"), parsed.error ? DIVISORS_ERRORS[parsed.error] : DIVISORS_HINT, !!parsed.error, [$("divisors")]);
     const range = UI.readRange();
-    // Size columns to the biggest numbers on the sheet so the problems line up.
-    // Wider problems (like 144 ÷ 12) allow fewer per row so the type stays readable.
+    const format = readFormat();
+    // Stacked problems are a fixed size. Long division is sized to the biggest
+    // numbers on the sheet so the problems line up; very wide ones (4-digit
+    // dividends) allow fewer per row so the type stays at 11 pt or more.
     const facts = parsed.error || !range ? null : C.divisionFacts(parsed.numbers, range.from, range.to);
-    const widths = facts && C.divisionWidths(facts);
-    const maxCols = widths ? Math.min(MAX_COLS, C.maxColsFor(widths.total + COL_GUTTER_EM)) : MAX_COLS;
+    const size = format === "stacked" ? C.STACKED_SIZE : facts && C.longDivisionSize(facts);
+    const maxCols = size ? Math.min(MAX_COLS, C.maxColsFor(size.emPerCol)) : MAX_COLS;
     const grid = UI.readGrid(maxCols, maxCols < MAX_COLS ? "with these numbers" : "");
     if (!facts || !grid) return "invalid";
 
@@ -174,19 +223,21 @@
     const autoTitle = "Dividing by " + C.listLabel(divisors, "");
     $("title").placeholder = autoTitle;
     return UI.renderSheets({
-      op: "÷", problems, factCount: facts.length, cols: grid.cols, rows: grid.rows,
-      layout: C.layout(grid.cols, grid.rows, { emPerCol: widths.total + COL_GUTTER_EM, emPerRow: EM_PER_ROW, maxFont: MAX_FONT }),
+      op: "÷", format, problems, factCount: facts.length, cols: grid.cols, rows: grid.rows,
+      layout: C.layout(grid.cols, grid.rows, size),
       title: $("title").value.trim() || autoTitle,
       rangeText: "Answers " + range.from + " to " + range.to,
-      buildProblem,
-      gridVars: { "--cols": widths.cols.map((w) => w.toFixed(3) + "em").join(" ") }
+      buildProblem: BUILDERS[format],
+      gridVars: format === "long" ? size.vars : {}
     });
   }
 
   UI.start({
     storeKey: "division-worksheets:v1",
     fields: ["divisors", "from", "to", "cols", "rows", "title"],
-    render
+    render,
+    getExtra: () => ({ format: readFormat() }),
+    applyExtra: (d) => { if (d.format === "long") $("format-long").checked = true; }
   });
 })();
 </script>

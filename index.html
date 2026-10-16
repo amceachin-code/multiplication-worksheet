@@ -20,57 +20,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
 <link rel="stylesheet" href="worksheet.css">
-<style>
-/* Page-only styles. Shared layout, panel, paper, and print rules are in worksheet.css. */
-.seg-caption { font-size: 0.9rem; }
-.seg {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  overflow: hidden;
-}
-.seg label { position: relative; display: block; }
-.seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
-.seg span {
-  display: block;
-  text-align: center;
-  padding: 8px 6px;
-  font-size: 0.9rem;
-  background: var(--field);
-  cursor: pointer;
-}
-.seg label + label span { border-left: 1px solid var(--line); }
-.seg input:checked + span { background: var(--text); color: var(--surface); font-weight: 700; }
-.seg input:focus-visible + span { outline: 2px solid var(--blue); outline-offset: 2px; }
-
-/* One stacked problem: the top number, then x and the bottom number over a rule. */
-.prob {
-  justify-self: center;
-  align-self: start;
-  width: 2.8em;
-  padding-top: 0.35em;
-  line-height: 1.2;
-  text-align: right;
-  font-variant-numeric: tabular-nums lining-nums;
-}
-.prob .n2 {
-  display: flex;
-  justify-content: space-between;
-  border-bottom: 0.08em solid var(--ink);
-  padding-bottom: 0.05em;
-}
-/* The answer spot under the rule: empty on the worksheet, filled on the answer
-   key. Rows already leave room for it, so nothing moves. Flex end keeps the
-   answer under the ones digits; if a wide fallback font makes 9801 wider than
-   the problem, it spills left into the cell's spare room, not into a neighbor. */
-.prob .ans {
-  display: flex;
-  justify-content: flex-end;
-  padding-top: 0.12em;
-  font-weight: 700;
-}
-</style>
 </head>
 <body>
 <div class="app">
@@ -156,20 +105,10 @@
     empty: "Enter at least one times table, like 4.",
     format: "Use whole numbers from 0 to 99, like 4 or 3, 4, 6 or 2-5."
   };
-  // Room one stacked problem needs, in em: width, and height plus space for the answer.
-  const SIZE = { emPerCol: 3.4, emPerRow: 4.6, maxFont: 26 };
-
   // One stacked problem: the top number, then × and the bottom number over a
-  // rule, then the answer spot. The product prints only on answer key pages
-  // (showAnswer must be exactly true, so a stray argument can't leak answers).
-  // data-part marks each piece so the answer key check can read it back.
-  function buildProblem([a, b, product], showAnswer) {
-    const p = UI.el("div", "prob");
-    const n2 = UI.el("div", "n2");
-    n2.append(UI.part("span", "x", "sign", "×"), UI.part("span", "", "b", String(b)));
-    p.append(UI.part("div", "n1", "a", String(a)), n2, UI.part("div", "ans", "answer", showAnswer === true ? String(product) : ""));
-    return p;
-  }
+  // rule, then the answer spot. Shared with the division page, as are its
+  // styles (.stacked in worksheet.css) and its size (WorksheetCore.STACKED_SIZE).
+  const buildProblem = (problem, showAnswer) => UI.stackedProblem("×", problem, showAnswer);
 
   function render(seed) {
     // Check every field first so all errors show at once.
@@ -187,8 +126,8 @@
     const autoTitle = "Multiplication: " + C.listLabel(tables, "s");
     $("title").placeholder = autoTitle;
     return UI.renderSheets({
-      op: "×", problems, factCount: facts.length, cols: grid.cols, rows: grid.rows,
-      layout: C.layout(grid.cols, grid.rows, SIZE),
+      op: "×", format: "stacked", problems, factCount: facts.length, cols: grid.cols, rows: grid.rows,
+      layout: C.layout(grid.cols, grid.rows, C.STACKED_SIZE),
       title: $("title").value.trim() || autoTitle,
       rangeText: "× " + range.from + " to " + range.to,
       buildProblem

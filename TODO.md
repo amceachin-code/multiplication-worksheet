@@ -56,7 +56,20 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - [x] Print a sheet and key on a real printer.
 - [ ] Print from iPhone Safari and an Android phone.
 
+## 6. Division layouts
+
+- [x] Allow up to 10 problems per row, so 10 rows of 10 fit on one page.
+- [x] Layout choice: Division symbol (stacked, like the times tables) or Long division. Saved between visits.
+- [x] Answer key and its read-back check cover both layouts.
+- [x] Node tests: 31 pass, with 640 single-change mutations across the three printed forms.
+- [x] Browser sweep, PDF read-back, and fault tests for both layouts.
+- [x] Review pass.
+- [x] Regenerate `division/og-image.png`.
+- [ ] Commit and push, then check the live division page in both layouts with the key on.
+- [ ] Print both layouts on a real printer and from phones.
+
 ## Later, maybe
 
 - [x] Answer key page (optional checkbox, prints after the worksheet).
 - [ ] MIT license file.
+- [ ] Long division with remainders, or room to show the work.

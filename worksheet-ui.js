@@ -26,6 +26,21 @@
     return n;
   }
 
+  /**
+   * One stacked problem, as both pages print it: the top number, then the sign
+   * and the bottom number over a rule, then the answer spot (see .stacked in
+   * worksheet.css). `problem` is [top, bottom, answer]. The answer prints only
+   * on answer key pages: showAnswer must be exactly true, so a stray argument
+   * can't leak answers onto a worksheet.
+   */
+  function stackedProblem(sign, [a, b, answer], showAnswer) {
+    const p = el("div", "stacked");
+    const n2 = el("div", "n2");
+    n2.append(part("span", "", "sign", sign), part("span", "", "b", String(b)));
+    p.append(part("div", "", "a", String(a)), n2, part("div", "ans", "answer", showAnswer === true ? String(answer) : ""));
+    return p;
+  }
+
   /** Whole number from an input, or null if blank, not a number, or out of range. */
   function readInt(id, min, max) {
     const v = $(id).value.trim();
@@ -116,10 +131,11 @@
   /**
    * Draw the summary line and every page of the sheet, then the answer key
    * pages when the Answer key switch is on.
-   * opts: op ("×" or "÷"), problems (already dealt, each [a, b, answer]),
-   * factCount, cols, rows, layout (from WorksheetCore.layout), title, rangeText,
-   * buildProblem(problem, showAnswer) -> element, and gridVars (CSS custom
-   * properties set on each grid).
+   * opts: op ("×" or "÷"), format (how buildProblem draws a problem, "stacked"
+   * or "long", so the check knows what to expect), problems (already dealt,
+   * each [a, b, answer]), factCount, cols, rows, layout (from
+   * WorksheetCore.layout), title, rangeText, buildProblem(problem, showAnswer)
+   * -> element, and gridVars (CSS custom properties set on each grid).
    *
    * Pages are built off screen, read back, and checked with
    * WorksheetCore.verifySheets. Only pages that pass go on screen, all in one
@@ -128,11 +144,11 @@
    * Returns "ok", or "failed" when a check failed (the summary says so).
    */
   function renderSheets(opts) {
-    const { op, problems, factCount, cols, rows, layout: L, title, rangeText, buildProblem, gridVars = {} } = opts;
+    const { op, format, problems, factCount, cols, rows, layout: L, title, rangeText, buildProblem, gridVars = {} } = opts;
     const withKey = $("answer-key").checked;
     const total = problems.length;
     const rowH = C.GRID_H / L.rowsPerPage;
-    const sheet = { op, cols, rows, rowsPerPage: L.rowsPerPage };
+    const sheet = { op, format, cols, rows, rowsPerPage: L.rowsPerPage };
 
     // One page. The worksheet and the key both come through here with the same
     // slice, code, and grid; only isKey differs.
@@ -253,5 +269,5 @@
     run();
   }
 
-  window.WorksheetUI = { $, el, part, setMsg, readRange, readGrid, renderSheets, start };
+  window.WorksheetUI = { $, el, part, stackedProblem, setMsg, readRange, readGrid, renderSheets, start };
 })();
