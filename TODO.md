@@ -24,7 +24,7 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 
 - [x] Serve from `main`, root folder: `gh api -X POST repos/amceachin-code/multiplication-worksheet/pages -f "source[branch]=main" -f "source[path]=/"`
 - [x] Wait for the first build: `gh api repos/amceachin-code/multiplication-worksheet/pages/builds/latest`
-- [ ] Open https://www.andrew-mceachin.com/multiplication-worksheet/ and confirm the sheet renders and Print works.
+- [x] Open https://www.andrew-mceachin.com/multiplication-worksheet/ and confirm the sheet renders and Print works.
 - [x] Add the live link to the top of `README.md` and to the repo's "Website" field.
 
 ## 3. Get it ready to share with other families
@@ -52,8 +52,8 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - [x] Node tests for every fact plus 425 single-change mutations (`tests/answer-key.test.js`).
 - [x] Browser sweep of both pages, plus seven fault tests.
 - [x] PDF read-back check: printed answers recomputed from `pdftotext` output.
-- [ ] Commit and push, then check both live pages with the key on.
-- [ ] Print a sheet and key on a real printer.
+- [x] Commit and push, then check both live pages with the key on.
+- [x] Print a sheet and key on a real printer.
 - [ ] Print from iPhone Safari and an Android phone.
 
 ## Later, maybe
