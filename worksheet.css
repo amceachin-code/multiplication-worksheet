@@ -1,8 +1,21 @@
 /* Shared styles for the times table and division worksheet pages, including
-   the stacked problem both pages print. A page keeps only styles no other
-   page uses inline (the division page's long-division problem).
+   the stacked problem both pages print, and the fonts and colors the privacy
+   page uses too. A page keeps only styles no other page uses inline: the
+   one-line problem on the times table page, long division on the division
+   page, and the privacy page's reading column.
 
    Layout: settings column on the left, letter-size paper preview on the right. Stacks on phones. */
+
+/* Fonts are served from this site (fonts/), not a font service, so the pages
+   contact no other site (see privacy/). These are the "latin" subsets Google
+   Fonts serves: English letters, digits, ×, ÷, and the en dash in titles.
+   Other characters fall back to the system fonts in --font-sheet and
+   --font-ui. Licenses: fonts/OFL-*.txt. */
+@font-face { font-family: "Andika"; font-weight: 400; font-display: swap; src: url("fonts/andika-400.woff2") format("woff2"); }
+@font-face { font-family: "Andika"; font-weight: 700; font-display: swap; src: url("fonts/andika-700.woff2") format("woff2"); }
+@font-face { font-family: "Atkinson Hyperlegible"; font-weight: 400; font-display: swap; src: url("fonts/atkinson-hyperlegible-400.woff2") format("woff2"); }
+@font-face { font-family: "Atkinson Hyperlegible"; font-weight: 700; font-display: swap; src: url("fonts/atkinson-hyperlegible-700.woff2") format("woff2"); }
+
 :root {
   --desk: #e7ecf2;
   --surface: #f6f8fb;
@@ -192,7 +205,10 @@ button {
 .btn-shuffle:hover { border-color: var(--muted); }
 .print-note { font-size: 0.8rem; color: var(--muted); margin: 0; }
 .brand .cross-link { font-size: 0.88rem; margin: 8px 0 0; }
-.cross-link a { color: var(--blue); }
+.cross-link a, .panel-footer a { color: var(--blue); }
+/* The privacy link, at the very bottom of the panel. margin-top: auto pushes
+   it down when the panel is taller than its contents. */
+.panel-footer { font-size: 0.82rem; margin: auto 0 0; }
 
 /* ---------- Preview ---------- */
 .preview {

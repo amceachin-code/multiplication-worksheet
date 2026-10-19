@@ -7,11 +7,11 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - `index.html` (times tables) and `division/index.html` share `worksheet.css`, `worksheet-core.js`, and `worksheet-ui.js`. No build step.
 - Both pages can print an answer key. With the Answer key switch on, key pages print after the worksheet pages, and a sheet code matches each key to its sheet.
 - Tested in headless Chrome: default settings (4s, ×1 to 10, 10×10) print on one letter page. 250 problems across 3 tables split onto 3 pages. Each fact appears equally often, with no back-to-back repeats.
-- Node tests live in two files: `tests/worksheet-core.test.js` and `tests/answer-key.test.js`.
-- Fonts (Andika, Atkinson Hyperlegible) load from Google Fonts. Offline, the page falls back to system fonts.
+- Node tests live in three files: `tests/worksheet-core.test.js`, `tests/answer-key.test.js`, and `tests/privacy.test.js`.
+- Fonts (Andika, Atkinson Hyperlegible) are served from `fonts/` on this site, with their licenses.
 - Live at https://www.andrew-mceachin.com/multiplication-worksheet/ (public repo `amceachin-code/multiplication-worksheet`, Pages from `main` root).
 - Link previews use `og-image.png`, a 1200x630 light-mode screenshot of the page. Regenerate it if the layout changes.
-- The page collects nothing. Settings live only in the visitor's localStorage. The one outside request is Google Fonts, which sees the visitor's IP like any font CDN.
+- The page collects nothing. Settings live only in the visitor's localStorage. The pages make no requests to other sites. The Privacy and data page (`privacy/`) says so for families and for district IT.
 
 ## 1. Create the public repo
 
@@ -91,6 +91,16 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - [x] Browser checks on both pages, at phone width and in the desktop panel.
 - [x] Review pass.
 - [x] Commit and push, then check typing commas, dashes, and "to" on a real phone. Checked on an iPhone.
+
+## 9. Privacy page and local fonts
+
+- [x] Privacy and data page (`privacy/index.html`): a short version for teachers and families, then a longer one for district admin and IT staff. Works in dark mode and at phone width.
+- [x] A "Privacy and data" link at the bottom of the settings panel on both pages. Hidden when printing.
+- [x] Serve the fonts from `fonts/` (latin subsets, with their OFL licenses) and drop Google Fonts, so the pages contact no other site.
+- [x] Node tests: 40 pass. `tests/privacy.test.js` holds the site to the privacy page's promises.
+- [x] Browser checks (every request stays on the site, font metrics unchanged, one-line sheet still fits) and a PDF check (fonts embedded, all key answers right).
+- [x] Review pass and the user's review of the privacy page wording.
+- [ ] Commit and push, then check the live pages make no requests to other sites.
 
 ## Later, maybe
 

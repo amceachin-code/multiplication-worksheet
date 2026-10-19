@@ -54,18 +54,32 @@ How the key stays right:
 - Before anything goes on screen, the page reads its own text back and checks every problem with `WorksheetCore.verifySheets`: the same numbers in the same spots as the worksheet, every answer right for the numbers printed beside it, no answers on the worksheet, and matching codes.
 - If the key fails, the worksheet still shows, but the key is left out and the print button turns off. If the worksheet fails, nothing shows. Only checked pages reach the screen, so no print path (the button, Cmd+P, or the browser menu) can print an unchecked one.
 
+## Privacy
+
+- The pages collect nothing. There are no accounts, sign-ins, cookies, ads, analytics, or tracking, and no forms. The tool never asks for names or other personal details: Name and Date are blank lines on the paper.
+- Settings are saved only in the visitor's own browser (localStorage). The Answer key switch is never saved.
+- The pages load everything, fonts included, from this site. They contact no other site.
+- The privacy page has a short version for teachers and families and a longer one for district admin and IT staff: https://www.andrew-mceachin.com/multiplication-worksheet/privacy/ (the file is `privacy/index.html`). Both worksheet pages link to it at the bottom of the settings panel.
+- For Clever, add the tool as a plain link or bookmark in the Clever Portal. It needs no SSO, rostering, or LTI. A web filter only needs to allow www.andrew-mceachin.com.
+
 ## Files
 
 Both pages share three files at the repo root:
 
-- `worksheet.css`: colors, panel, paper, and print styles, plus the stacked problem and the segmented control (the two- and three-choice switches) that both pages use. Each page keeps only its own layout styles inline: the one-line problem (`.horiz`) on the times table page, and long division on the division page.
+- `worksheet.css`: the `@font-face` rules for the local fonts (at the top), colors, panel, paper, and print styles, the privacy link at the bottom of the panel (`.panel-footer`), plus the stacked problem and the segmented control (the two- and three-choice switches) that both pages use. Each page keeps only its own layout styles inline: the one-line problem (`.horiz`) on the times table page, and long division on the division page.
 - `worksheet-core.js`: parsing (`parseNumberList` takes commas, spaces, dashes, and the word "to"), fact building, dealing, the Mixed flip (`mixOrder`), layout math, sizing for long division and one-line problems (`longDivisionSize`, `horizontalSize`), and the answer key checks for all four printed forms (stacked times tables, one-line times tables, stacked division, and long division). No DOM, so Node can test it.
 - `worksheet-ui.js`: builds the sheet and key in the page (including the stacked problem for both pages), saves settings, and wires up the buttons.
 
-Run the 35 tests (Node 18 or later, nothing to install): `node --test tests/*.test.js`
+Other files:
+
+- `fonts/`: Andika and Atkinson Hyperlegible, regular and bold, as `.woff2` files (the "latin" subsets Google Fonts serves, about 48 KB in all). Their licenses ship with them: `OFL-Andika.txt` and `OFL-AtkinsonHyperlegible.txt` (SIL Open Font License 1.1). Characters outside the latin subset fall back to the system fonts in the font stacks.
+- `privacy/index.html`: the Privacy and data page. It uses `worksheet.css` for colors and fonts, plus its own inline styles for a single readable column.
+
+Run the 40 tests (Node 18 or later, nothing to install): `node --test tests/*.test.js`
 
 - `tests/worksheet-core.test.js` covers parsing, fact building, dealing, and layout. Parsing includes phone-friendly ranges ("2 to 5", "2to5", an em dash) and refuses forms like "to 5" or "2 through 5". It checks that `mixOrder` flips exactly half the problems that can flip, never flips a square, keeps each product with its numbers, and gives the same result for the same seed. It also checks that both division layouts fit 10 rows of 10 on one page, that one-line times tables fit 5 per row by 20 rows on one page, and that one-line widths grow with the biggest numbers.
 - `tests/answer-key.test.js` covers the answer key checks. It checks every possible fact (all 20,000 times table facts, 0 to 99 by 0 to 99 in both orders, and all 9,900 division facts) using repeated addition and subtraction rather than `*` and `/`. It runs every read-back check on all four printed forms, and the sweep of 300 random sheets includes Mixed times table sheets. It makes 857 single-change mutations to a sheet and key (214 for stacked times tables, 217 for one-line times tables, 214 for stacked division, and 212 for long division), and the check must reject every one. It also checks that an unknown operation or format is refused.
+- `tests/privacy.test.js` holds the site to the privacy page's promises by reading the files as text. Pages load nothing from another site (in tags or inline styles). The stylesheet fetches only the four local font files, which must exist, and both license files must be there. No script makes network calls, uses service workers or dynamic imports, or touches cookies. The privacy page lists exactly the storage keys the pages use, and storage happens only in the save and restore code in `worksheet-ui.js`. Both worksheet pages link to the privacy page.
 
 ## Hosting
 

@@ -1,5 +1,47 @@
 # Progress
 
+## 2026-10-18 (privacy page and local fonts)
+
+### Changes
+
+- The user asked whether the tool could be hosted on Clever. Answer: yes, as a plain link or bookmark in the Clever Portal. Becoming a listed Clever app would need SSO, a server, and app review, which a tool with no accounts doesn't need. The user then asked for data and privacy information: a short version on the website and a longer one for district admin and IT staff.
+- New page `privacy/index.html`, "Privacy and data". It opens with "The short version", a shaded box for teachers and families: nothing typed is collected or sent; no accounts, sign-ins, cookies, ads, analytics, or tracking; settings are saved only in the browser; the tool never asks for names or other personal details (Name and Date are blank lines on paper); and the pages load everything, fonts included, from this site.
+- The second part, "For district administrators and IT staff", has sections on what the tool is (static pages, no server code or database, public source), information collected (none, including from children under 13; no forms; no network requests after load), what is stored on the device (the localStorage keys `times-table-worksheets:v1` and `division-worksheets:v1`, what's in them, that the Answer key is never saved, a shared-computer note, and how to clear them; no cookies), network requests (only www.andrew-mceachin.com over HTTPS), hosting, web filters and Clever, and changes and contact.
+- Hosting section: GitHub Pages serves the site. GitHub logs visitor IP addresses for security, per GitHub's own docs (checked), with a link to the GitHub General Privacy Statement. The site owner gets no visitor logs or analytics.
+- Web filters and Clever section: only www.andrew-mceachin.com needs allowing. It works as a plain Clever Portal link, with no SSO, rostering, or LTI. Printing uses the device's own print dialog.
+- Contact is amceachin@gmail.com. The page links to the public change history and reads "Last updated October 18, 2026."
+- The privacy page uses `worksheet.css` for colors and fonts, plus its own inline styles for a single readable column. It works in light and dark mode and at phone width.
+- Both worksheet pages have a small "Privacy and data" link at the very bottom of the settings panel (`.panel-footer` in `worksheet.css`). It is hidden when printing, like the rest of the panel.
+- Local fonts: the pages no longer load Google Fonts. New `fonts/` folder with `andika-400.woff2`, `andika-700.woff2`, `atkinson-hyperlegible-400.woff2`, and `atkinson-hyperlegible-700.woff2`. These are the "latin" subsets Google Fonts serves, about 48 KB in all, downloaded with the user's permission from fonts.gstatic.com. `OFL-Andika.txt` and `OFL-AtkinsonHyperlegible.txt` (SIL Open Font License 1.1, from Google's fonts repo) ship with them, as the license requires.
+- The `@font-face` rules sit at the top of `worksheet.css`. The Google Fonts preconnect and stylesheet links are gone from `index.html` and `division/index.html`. Characters outside the latin subset fall back to the system fonts already in the font stacks.
+- Tests: 40 Node tests pass (was 35). New `tests/privacy.test.js` (5 tests) reads the files as text and holds the site to the privacy page's promises. Pages load nothing from another site (link, script, img, iframe, and media tags, and inline styles). The stylesheet fetches only the four local font files, which exist, and both license files are present. No script, shared or inline, uses fetch, XMLHttpRequest, sendBeacon, WebSocket, EventSource, service workers, cookies, or dynamic import. The privacy page lists exactly the storage keys the pages use, and storage happens only in the save and restore code in `worksheet-ui.js`. Both worksheet pages link to the privacy page.
+- Checked that the new tests catch the old Google Fonts link, a protocol-relative script, a `fetch` call, and `document.cookie`.
+- Browser checks (local preview): every request went to the site itself, and all four font faces loaded from `fonts/`. The font measures the same as before (digits, ×, and = are 0.586 em, which the layout math assumes). A 0 to 10 one-line sheet at 5 × 20 still fits, with 0 overflow and 0 wrong answers. The privacy page was checked in dark mode, and in light mode at 375 px phone width (no sideways scroll). Its local links load, and its three outside links return 200.
+- Print check: a 0 to 10 one-line sheet printed as 2 pages. The PDF embeds Andika and Andika-Bold, and all 100 key answers were right.
+- The link preview images were not regenerated. The panel footer sits below the 1200x630 crop, and the fonts are the same files.
+
+- Review pass (the user picked all five findings): reworded "students never enter anything" (students may use the tool themselves, as from Clever) to "never asks for names or other personal details"; made the network-request wording exact (fonts load when text first needs them; the privacy page loads no scripts); limited the device line to what was tested (Chrome on a computer, Safari on iPhone); added link-preview tags to the privacy page (reusing the times table image); and updated the `worksheet.css` header comment, which still said only the division page keeps inline styles.
+
+### Decisions
+
+- A plain Clever Portal link rather than becoming a Clever app partner.
+- Serve the fonts from the site (latin subset only) rather than keep Google Fonts. The pages then contact no other site, and school web filters that block Google Fonts don't change how the sheet looks.
+- A footer link only on the worksheet pages, with no sentence, at the user's choice. The short version lives at the top of the privacy page.
+- Contact: amceachin@gmail.com, the user's choice.
+- No legal compliance claims (like "FERPA compliant"). The page states facts, so each district can decide.
+- For the record: Andika's license reserves the name "Andika" for unmodified fonts. These files are the same subsets Google Fonts serves, which is common practice. SIL's own web font files are an option if a stricter reading is wanted.
+
+### Files touched
+
+- `privacy/index.html` (new), `fonts/` (six new files: four `.woff2` fonts and two license files), `worksheet.css`, `index.html`, `division/index.html`, `tests/privacy.test.js` (new), `README.md`, `TODO.md`, `PROGRESS.md`
+
+### Next steps
+
+- The user reviews the privacy page wording.
+- Commit and push.
+- Check that the live pages make no requests to other sites.
+- Share the privacy page link with district IT when asking for a Clever link.
+
 ## 2026-10-16 (phone keyboard and Mixed)
 
 ### Changes

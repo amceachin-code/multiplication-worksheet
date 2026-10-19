@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy and Data</title>
+<meta name="description" content="Privacy and data details for the free times table and division worksheet makers: nothing is collected, and the pages contact no other site.">
+<!-- Link previews, for when this page is shared with district staff by email or chat. OG URLs must be absolute. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Privacy and Data: Times Table and Division Worksheets">
+<meta property="og:description" content="Nothing is collected, nothing is sent anywhere, and the pages contact no other site. Details for teachers, families, and district IT staff.">
+<meta property="og:url" content="https://www.andrew-mceachin.com/multiplication-worksheet/privacy/">
+<meta property="og:image" content="https://www.andrew-mceachin.com/multiplication-worksheet/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Inline SVG favicon: the pencil-yellow tile the worksheet pages use, with a check mark. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f5c13e'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11' fill='none' stroke='%232a2206' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<!-- Shared colors and fonts. The page layout below is its own: a single
+     readable column, not the worksheet pages' panel and paper. -->
+<link rel="stylesheet" href="../worksheet.css">
+<style>
+.doc {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 40px 24px 64px;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.doc h1 {
+  font-family: var(--font-sheet);
+  font-size: 2rem;
+  line-height: 1.15;
+  margin: 0 0 6px;
+}
+.doc .lede { color: var(--muted); margin: 0 0 28px; }
+.doc h2 {
+  font-family: var(--font-sheet);
+  font-size: 1.35rem;
+  margin: 40px 0 10px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.doc h3 { font-size: 1rem; margin: 24px 0 6px; }
+.doc p, .doc ul { margin: 0 0 12px; }
+.doc ul { padding-left: 1.3em; }
+.doc li { margin-bottom: 6px; }
+.doc a { color: var(--blue); }
+.doc code {
+  font-size: 0.92em;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 5px;
+  overflow-wrap: anywhere;
+}
+/* The short version, set apart so a parent or teacher can stop there. */
+.short {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px 22px 8px;
+}
+.short h2 { margin-top: 0; padding-top: 0; border-top: 0; }
+.doc .meta { color: var(--muted); font-size: 0.88rem; }
+@media (max-width: 820px) { .doc { padding: 28px 16px 48px; } }
+@media print {
+  .doc { max-width: none; padding: 0; }
+  .doc a { color: inherit; }
+}
+</style>
+</head>
+<body>
+<main class="doc">
+  <h1>Privacy and data</h1>
+  <p class="lede">For the <a href="../">Times Table Worksheets</a> and <a href="../division/">Division Worksheets</a> pages.</p>
+
+  <section class="short" aria-labelledby="short-heading">
+    <h2 id="short-heading">The short version</h2>
+    <ul>
+      <li>Nothing you type is collected or sent anywhere. The worksheets are made in your browser.</li>
+      <li>There are no accounts, sign-ins, cookies, ads, analytics, or tracking.</li>
+      <li>Your settings are saved only in your own browser, so the page remembers them next time. Clearing your browser's data for this site erases them.</li>
+      <li>The tool never asks for names or other personal details. The Name and Date lines are blank, for writing on the printed page.</li>
+      <li>The pages load everything, fonts included, from this site and contact no other site.</li>
+    </ul>
+  </section>
+
+  <h2>For district administrators and IT staff</h2>
+  <p>The details below describe exactly what the pages do, so you can review them for your district. The code is public, so you can also check it yourself.</p>
+
+  <h3>What the tool is</h3>
+  <ul>
+    <li>Static web pages (HTML, CSS, and JavaScript) that build printable worksheets and answer keys in the browser.</li>
+    <li>There is no server-side code, database, or API. Nothing is uploaded, and no account is needed.</li>
+    <li>The source code is public: <a href="https://github.com/amceachin-code/multiplication-worksheet">github.com/amceachin-code/multiplication-worksheet</a>.</li>
+  </ul>
+
+  <h3>Information collected</h3>
+  <ul>
+    <li>None. The tool doesn't collect personal information from anyone, including students and children under 13.</li>
+    <li>The pages have no forms that submit anywhere. Besides loading their own files from this site, they make no network requests: no tracking pixels, beacons, or background calls.</li>
+    <li>Because nothing is collected, nothing is shared with or sold to anyone.</li>
+  </ul>
+
+  <h3>What is stored on the device</h3>
+  <ul>
+    <li>Each page saves its settings in the browser's local storage, under <code>times-table-worksheets:v1</code> or <code>division-worksheets:v1</code>.</li>
+    <li>Saved settings: the numbers chosen, the number range, the grid size, the layout and position choices, the optional worksheet title, and a random number that sets the shuffle order.</li>
+    <li>The Answer key switch is never saved, so each visit starts with it off.</li>
+    <li>Saved settings stay on that device and are never sent anywhere. On a shared computer, the next person to open the page sees the last settings used, including any title typed in. Clearing the browser's site data for www.andrew-mceachin.com removes them.</li>
+    <li>No cookies are set.</li>
+  </ul>
+
+  <h3>Network requests</h3>
+  <ul>
+    <li>All requests go to <code>www.andrew-mceachin.com</code> over HTTPS: the page itself, the shared stylesheet, the two scripts on the worksheet pages, and up to four font files, each fetched when text first needs it.</li>
+    <li>No third-party services are used: no font services, content delivery networks, analytics, or ads. The fonts (Andika and Atkinson Hyperlegible, both under the SIL Open Font License) are served from this site.</li>
+  </ul>
+
+  <h3>Hosting</h3>
+  <ul>
+    <li>The site is hosted on GitHub Pages, a service of GitHub, Inc.</li>
+    <li>Like any web host, GitHub's servers receive the standard details of each request (such as IP address and browser type) to deliver the pages. GitHub's documentation says it logs visitor IP addresses for security purposes. See the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub General Privacy Statement</a>.</li>
+    <li>The site owner gets no visitor logs or analytics.</li>
+  </ul>
+
+  <h3>Web filters and Clever</h3>
+  <ul>
+    <li>Only <code>www.andrew-mceachin.com</code> needs to be allowed.</li>
+    <li>The tool works as a plain link, for example a custom link or bookmark in the Clever Portal. It needs no single sign-on, rostering, or LTI integration.</li>
+    <li>It works in current web browsers. It has been tested in Chrome on a computer and Safari on iPhone.</li>
+    <li>Printing uses the device's own print dialog. Nothing about printing goes to this site.</li>
+  </ul>
+
+  <h3>Changes and contact</h3>
+  <ul>
+    <li>Every change to the pages is public in the code's <a href="https://github.com/amceachin-code/multiplication-worksheet/commits/main">change history</a>. This page will be updated if any of the above changes.</li>
+    <li>Questions: <a href="mailto:amceachin@gmail.com">amceachin@gmail.com</a></li>
+  </ul>
+
+  <p class="meta">Last updated October 18, 2026.</p>
+</main>
+</body>
+</html>
