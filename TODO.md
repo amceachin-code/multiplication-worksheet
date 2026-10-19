@@ -100,7 +100,7 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - [x] Node tests: 40 pass. `tests/privacy.test.js` holds the site to the privacy page's promises.
 - [x] Browser checks (every request stays on the site, font metrics unchanged, one-line sheet still fits) and a PDF check (fonts embedded, all key answers right).
 - [x] Review pass and the user's review of the privacy page wording.
-- [ ] Commit and push, then check the live pages make no requests to other sites.
+- [x] Commit and push, then check the live pages make no requests to other sites.
 
 ## Later, maybe
 
