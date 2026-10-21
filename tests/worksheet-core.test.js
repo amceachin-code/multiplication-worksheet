@@ -195,7 +195,7 @@ test("one-line times tables fit 5 per row by 20 rows on one page", () => {
 test("layout keeps default sheets on one page and splits tall ones", () => {
   assert.equal(C.layout(10, 10, C.STACKED_SIZE).pages, 1);
   const tall = C.layout(12, 40, C.STACKED_SIZE);
-  assert.equal(tall.pages, 4);
+  assert.equal(tall.pages, 5);                // 9 rows a page, with room left for a phone's print footer
   assert.ok(tall.rowsPerPage * tall.pages >= 40);
 
   const div = C.layout(4, 10, C.longDivisionSize(C.divisionFacts([4], 1, 10)));
@@ -208,7 +208,7 @@ test("both division layouts fit 10 rows of 10 on one page", () => {
   assert.ok(C.maxColsFor(C.STACKED_SIZE.emPerCol) >= 10);
   const stacked = C.layout(10, 10, C.STACKED_SIZE);
   assert.equal(stacked.pages, 1);
-  assert.ok(stacked.font >= 13, `stacked font ${stacked.font}`);
+  assert.ok(stacked.font >= 12.5, `stacked font ${stacked.font}`);
   // Long division, on the default sheet and with every divisor from 1 to 12
   // and answers from 0 to 12 (dividends up to 144).
   for (const facts of [C.divisionFacts([4], 1, 10), C.divisionFacts(range(1, 12), 0, 12)]) {

@@ -12,8 +12,13 @@
   "use strict";
 
   // Sheet geometry in points (72 pt = 1 in). Letter page, 0.5 in margins.
+  // The header (1.05 in), the gap under it (0.15 in), and the grid come to
+  // 9.25 in, leaving 0.75 in spare at the bottom. iPhone Safari prints its own
+  // footer (the web address, date, and page number) there, and it gives the
+  // page only about 9.6 in, so a full 10 in sheet ran its last row onto a
+  // second page.
   const GRID_W = 7.5 * 72;                    // 540 pt
-  const GRID_H = (10 - 1.05 - 0.15) * 72;     // 633.6 pt below the header
+  const GRID_H = (10 - 1.05 - 0.15 - 0.75) * 72;   // 579.6 pt below the header
   const MIN_ONE_PAGE_FONT = 11;               // below this, split across pages instead
   const PAGED_FONT = 13;                      // font size once a sheet splits
 

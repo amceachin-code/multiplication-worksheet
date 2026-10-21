@@ -111,6 +111,7 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - [x] Browser checks on both pages (one line, Mixed, long division, multi-page sheets, bad counts, reload), plus PDF page counts.
 - [ ] Commit and push, then check the live pages with 3 worksheets and the key on.
 - [x] Fix the blank page between worksheets when the browser or printer adds its own margins.
+- [x] Leave room for iPhone Safari's print footer, so the last row stays on the page.
 - [ ] Print several worksheets on a real printer, from a computer and from a phone.
 
 ## Later, maybe

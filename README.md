@@ -27,6 +27,7 @@ A partner page in `division/` builds division sheets the same way. Problems can 
 - **Shuffle again** makes a new order. Changing the title keeps the current order.
 - **How many worksheets** (1 to 40, in the Sheet section, on both pages) prints several different worksheets at once, like one per student. Each one is shuffled on its own and has its own header on every page: Name and Date, title, and its own sheet code. Shuffle again makes a new order for all of them. Raising the number keeps the worksheets already showing and adds new ones after them, and the first worksheet is the same one you'd get with the number at 1. The preview labels them "Worksheet 2 of 3", and the button reads **Print 3 worksheets**.
 - Large grids split across pages automatically. Small grids get bigger numbers.
+- Each printed sheet uses 9.25 in of the 10 in between the half-inch margins. The spare room at the bottom is for the footer iPhone Safari adds (the web address, date, and page number), so a sheet never runs onto a second page.
 - Settings, including the layout and the number of worksheets, are remembered in your browser between visits.
 - While a setting is invalid, the last good sheet stays up, dimmed, and won't print.
 
