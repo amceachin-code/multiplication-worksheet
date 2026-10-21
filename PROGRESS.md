@@ -1,5 +1,29 @@
 # Progress
 
+## 2026-10-21 (several worksheets at once)
+
+### Changes
+
+- The user asked to make several worksheets in one go, each with its own header, while keeping Shuffle again.
+- New field in the Sheet section on both pages: "How many worksheets" (1 to 40, starts at 1), with the hint "Each one is shuffled on its own and has its own Name and Date line." It sits under the title, above the Answer key switch. It's saved with the other settings.
+- Each worksheet deals from its own seed, from the new `WorksheetCore.sheetSeeds(seed, count)`. The first seed is the saved one, so one worksheet looks exactly as before and saved sheets keep their problems. The rest come from a generator seeded from it, so raising the count keeps the worksheets already showing. Shuffle again picks a new seed, which reshuffles every worksheet. On the times table page, Mixed flips half of each worksheet with that worksheet's own generator.
+- Every page of every worksheet has the full header (Name, Date, title, range, sheet code). Each worksheet has its own sheet code.
+- `WorksheetUI.renderSheets` takes `worksheets` (one problem list per worksheet) instead of `problems`. It builds and checks each worksheet on its own, and each key against its own worksheet. Any failed worksheet shows nothing; any failed key leaves out all keys and turns printing off.
+- Print order with the key on: all worksheets, then their keys in the same order.
+- Preview labels read "Worksheet 2 of 3" (plus ", page 1 of 2" on long sheets) and "Answer key 2 of 3". With one worksheet they're unchanged.
+- The summary reads "3 worksheets, each with 100 problems from 10 facts. Each fact appears 10 times. Fills 3 pages, plus 3 for the answer keys." The button reads "Print 3 worksheets" or "Print 3 worksheets and keys". With one worksheet, both read as before. While the count is invalid, the disabled button keeps its last label.
+- The print note now reads "Prints on letter paper: the worksheets, then their answer keys if the switch is on. Each shuffle makes a new order for every worksheet."
+- Privacy page: the saved settings list now names the number of worksheets. "Last updated" moved to October 21, 2026.
+- Tests: 41 Node tests pass (was 40). The new one checks that `sheetSeeds` keeps the first seed, gives 20 different seeds, keeps the first ones when the count goes up, and deals different sheets.
+- Browser checks (headless Chromium, local server): 1 worksheet has the same code as before; 3 worksheets get 3 headers and 3 different codes, and the first matches the 1-worksheet code; with the key on, 6 pages in the right order with matching codes; 30 rows split into 3 pages per worksheet (18 pages with keys, and an 18-page PDF); one line with Mixed; 0 and 41 show "Worksheets: use 1 to 40." and dim the sheet; the count survives a reload; the division page with 4 long-division worksheets and keys (8-page PDF). No console errors.
+- Speed: 30 worksheets of 100 with keys redraw in about 140 ms. The extreme case, 40 worksheets of 15 by 60 with keys (400 pages), takes about 3 seconds.
+
+### Decisions
+
+- A number field rather than a fixed menu, capped at 40 so a class fits with room to spare.
+- Keys print after all the worksheets, not after each one, so the worksheets come off the printer as one stack to hand out.
+- No "Worksheet 2 of 3" on the printed page. The sheet code already tells worksheets and keys apart, and students don't need the count.
+
 ## 2026-10-18 (privacy page and local fonts)
 
 ### Changes

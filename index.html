@@ -107,6 +107,11 @@
         <label for="title">Title (optional)
           <input id="title" type="text" autocomplete="off" placeholder="Multiplication: 4s">
         </label>
+        <label for="sheets">How many worksheets
+          <input id="sheets" type="number" inputmode="numeric" min="1" max="40" value="1" aria-describedby="sheets-hint">
+        </label>
+        <span id="sheets-hint" class="hint">Each one is shuffled on its own and has its own Name and Date line.</span>
+        <span id="sheets-msg" class="err" hidden></span>
         <!-- Not saved between visits, so nobody prints a key by accident. -->
         <label class="switch" for="answer-key">
           <input id="answer-key" type="checkbox" role="switch" autocomplete="off" aria-describedby="answer-key-hint">
@@ -121,7 +126,7 @@
     <div class="actions">
       <button type="button" class="btn-print" id="print">Print worksheet</button>
       <button type="button" class="btn-shuffle" id="shuffle">Shuffle again</button>
-      <p class="print-note">Prints on letter paper: the worksheet, then the answer key if it's on. Each shuffle makes a new order.</p>
+      <p class="print-note">Prints on letter paper: the worksheets, then their answer keys if the switch is on. Each shuffle makes a new order for every worksheet.</p>
     </div>
 
     <p class="panel-footer"><a href="privacy/">Privacy and data</a></p>
@@ -208,19 +213,22 @@
     const size = format === "stacked" ? C.STACKED_SIZE : facts && C.horizontalSize(facts);
     const maxCols = format === "horizontal" && size ? Math.min(MAX_COLS, C.maxColsFor(size.emPerCol)) : MAX_COLS;
     const grid = UI.readGrid(maxCols, maxCols < MAX_COLS ? "on one line with these numbers" : "");
-    if (!facts || !grid) return "invalid";
+    const count = UI.readSheetCount();
+    if (!facts || !grid || !count) return "invalid";
 
     const total = grid.cols * grid.rows;
-    // One generator for both steps, so switching to Mixed keeps the order and
-    // only flips half the problems.
-    const rand = C.mulberry32(seed);
-    const dealt = C.dealProblems(facts, total, rand);
-    const problems = pos === "mixed" ? C.mixOrder(dealt, rand) : dealt;
+    // Each worksheet deals from its own seed. One generator for both steps, so
+    // switching to Mixed keeps the order and only flips half the problems.
+    const worksheets = C.sheetSeeds(seed, count).map((s) => {
+      const rand = C.mulberry32(s);
+      const dealt = C.dealProblems(facts, total, rand);
+      return pos === "mixed" ? C.mixOrder(dealt, rand) : dealt;
+    });
 
     const autoTitle = "Multiplication: " + C.listLabel(tables, "s");
     $("title").placeholder = autoTitle;
     return UI.renderSheets({
-      op: "×", format, problems, factCount: facts.length, cols: grid.cols, rows: grid.rows,
+      op: "×", format, worksheets, factCount: facts.length, cols: grid.cols, rows: grid.rows,
       layout: C.layout(grid.cols, grid.rows, size),
       title: $("title").value.trim() || autoTitle,
       rangeText: "× " + range.from + " to " + range.to,
@@ -231,7 +239,7 @@
 
   UI.start({
     storeKey: "times-table-worksheets:v1",
-    fields: ["tables", "from", "to", "cols", "rows", "title"],
+    fields: ["tables", "from", "to", "cols", "rows", "sheets", "title"],
     render,
     getExtra: () => ({ pos: readPos(), format: readFormat() }),
     applyExtra: (d) => {

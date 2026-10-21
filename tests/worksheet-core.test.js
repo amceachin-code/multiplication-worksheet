@@ -95,6 +95,22 @@ test("dealProblems is repeatable for a seed and safe with no facts", () => {
   assert.deepEqual(C.dealProblems([], 5, C.mulberry32(9)), []);
 });
 
+test("sheetSeeds keeps the first worksheet's seed and gives each worksheet its own shuffle", () => {
+  for (const seed of [0, 1, 42, 2026, 4294967295]) {
+    const seeds = C.sheetSeeds(seed, 20);
+    assert.equal(seeds.length, 20);
+    assert.equal(seeds[0], seed);                                   // one worksheet deals as before
+    assert.equal(new Set(seeds).size, 20);
+    for (const s of seeds) assert.ok(Number.isInteger(s) && s >= 0 && s < 2 ** 32);
+    assert.deepEqual(C.sheetSeeds(seed, 3), seeds.slice(0, 3));     // more worksheets keep the first ones
+    assert.deepEqual(C.sheetSeeds(seed, 1), [seed]);
+  }
+  // Different seeds deal different worksheets for 4s times 1 to 10.
+  const facts = C.multiplicationFacts([4], 1, 10, true);
+  const sheets = C.sheetSeeds(7, 5).map((s) => C.dealProblems(facts, 100, C.mulberry32(s)).map((p) => p[1]).join());
+  assert.equal(new Set(sheets).size, 5);
+});
+
 test("dealProblems deals facts directly, the same as dealing their indices", () => {
   // The pages used to deal indices and map them back to facts. Dealing the
   // facts themselves must give the very same sheet, so saved seeds keep their problems.

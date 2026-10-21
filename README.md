@@ -25,8 +25,9 @@ A partner page in `division/` builds division sheets the same way. Problems can 
 - Stacked allows up to 15 problems per row. One line allows as many as fit at 11 pt or more: 6 for 0 to 10 facts, 5 for wide ones like 99 × 99 = 9801, and more for small numbers (7 for 4s times 1 to 10), never over 15. Asking for too many shows "Problems per row: use 1 to 6 on one line with these numbers."
 - Facts are dealt in shuffled rounds, so each one appears about equally often and never twice in a row.
 - **Shuffle again** makes a new order. Changing the title keeps the current order.
+- **How many worksheets** (1 to 40, in the Sheet section, on both pages) prints several different worksheets at once, like one per student. Each one is shuffled on its own and has its own header on every page: Name and Date, title, and its own sheet code. Shuffle again makes a new order for all of them. Raising the number keeps the worksheets already showing and adds new ones after them, and the first worksheet is the same one you'd get with the number at 1. The preview labels them "Worksheet 2 of 3", and the button reads **Print 3 worksheets**.
 - Large grids split across pages automatically. Small grids get bigger numbers.
-- Settings, including the layout, are remembered in your browser between visits.
+- Settings, including the layout and the number of worksheets, are remembered in your browser between visits.
 - While a setting is invalid, the last good sheet stays up, dimmed, and won't print.
 
 ## Division page
@@ -42,6 +43,7 @@ A partner page in `division/` builds division sheets the same way. Problems can 
 
 - Both pages have an **Answer key** switch in the Sheet section. It starts off on every visit and isn't saved with the other settings, so nobody prints a key by accident.
 - With it on, all worksheet pages print first, then matching key pages in the same order. A one-page worksheet prints 2 pages, and a three-page one prints 6. The button reads **Print worksheet and key**.
+- With several worksheets, every worksheet prints first, then one key for each, in the same order (Worksheet 1, 2, 3, then Answer key 1, 2, 3). Each key carries its own worksheet's sheet code. The button reads **Print 3 worksheets and keys**.
 - Print one-sided, or the key lands on the back of the worksheet.
 - Key pages look like the worksheet with the answers filled in, in bold black. The Name and Date line becomes an "Answer key" label. Stacked answers (times tables and division symbol) sit under the rule, lined up on the right. One-line answers sit on the answer line, which stays put. Long division answers sit above the bar, with the answer's last digit over the dividend's last digit. Nothing on the page moves between the worksheet and the key.
 - Every worksheet and key page shows a short sheet code at the right end of the Name and Date line, like "Sheet K7HF". It comes from the problems, their order, and the grid and page split, so a key can always be matched to the sheet in hand, even one printed on another day.
@@ -52,7 +54,7 @@ How the key stays right:
 
 - Each answer is made once, with its problem. One dealt list feeds both the worksheet and the key.
 - Before anything goes on screen, the page reads its own text back and checks every problem with `WorksheetCore.verifySheets`: the same numbers in the same spots as the worksheet, every answer right for the numbers printed beside it, no answers on the worksheet, and matching codes.
-- If the key fails, the worksheet still shows, but the key is left out and the print button turns off. If the worksheet fails, nothing shows. Only checked pages reach the screen, so no print path (the button, Cmd+P, or the browser menu) can print an unchecked one.
+- Each worksheet is checked on its own, and each key against its own worksheet. If any key fails, the worksheets still show, but every key is left out and the print button turns off. If any worksheet fails, nothing shows. Only checked pages reach the screen, so no print path (the button, Cmd+P, or the browser menu) can print an unchecked one.
 
 ## Privacy
 
@@ -67,7 +69,7 @@ How the key stays right:
 Both pages share three files at the repo root:
 
 - `worksheet.css`: the `@font-face` rules for the local fonts (at the top), colors, panel, paper, and print styles, the privacy link at the bottom of the panel (`.panel-footer`), plus the stacked problem and the segmented control (the two- and three-choice switches) that both pages use. Each page keeps only its own layout styles inline: the one-line problem (`.horiz`) on the times table page, and long division on the division page.
-- `worksheet-core.js`: parsing (`parseNumberList` takes commas, spaces, dashes, and the word "to"), fact building, dealing, the Mixed flip (`mixOrder`), layout math, sizing for long division and one-line problems (`longDivisionSize`, `horizontalSize`), and the answer key checks for all four printed forms (stacked times tables, one-line times tables, stacked division, and long division). No DOM, so Node can test it.
+- `worksheet-core.js`: parsing (`parseNumberList` takes commas, spaces, dashes, and the word "to"), fact building, dealing, one seed per worksheet (`sheetSeeds`), the Mixed flip (`mixOrder`), layout math, sizing for long division and one-line problems (`longDivisionSize`, `horizontalSize`), and the answer key checks for all four printed forms (stacked times tables, one-line times tables, stacked division, and long division). No DOM, so Node can test it.
 - `worksheet-ui.js`: builds the sheet and key in the page (including the stacked problem for both pages), saves settings, and wires up the buttons.
 
 Other files:
@@ -75,9 +77,9 @@ Other files:
 - `fonts/`: Andika and Atkinson Hyperlegible, regular and bold, as `.woff2` files (the "latin" subsets Google Fonts serves, about 48 KB in all). Their licenses ship with them: `OFL-Andika.txt` and `OFL-AtkinsonHyperlegible.txt` (SIL Open Font License 1.1). Characters outside the latin subset fall back to the system fonts in the font stacks.
 - `privacy/index.html`: the Privacy and data page. It uses `worksheet.css` for colors and fonts, plus its own inline styles for a single readable column.
 
-Run the 40 tests (Node 18 or later, nothing to install): `node --test tests/*.test.js`
+Run the 41 tests (Node 18 or later, nothing to install): `node --test tests/*.test.js`
 
-- `tests/worksheet-core.test.js` covers parsing, fact building, dealing, and layout. Parsing includes phone-friendly ranges ("2 to 5", "2to5", an em dash) and refuses forms like "to 5" or "2 through 5". It checks that `mixOrder` flips exactly half the problems that can flip, never flips a square, keeps each product with its numbers, and gives the same result for the same seed. It also checks that both division layouts fit 10 rows of 10 on one page, that one-line times tables fit 5 per row by 20 rows on one page, and that one-line widths grow with the biggest numbers.
+- `tests/worksheet-core.test.js` covers parsing, fact building, dealing, and layout. It checks that `sheetSeeds` keeps the first worksheet's seed, gives every worksheet a different one, and keeps the first ones when the count goes up. Parsing includes phone-friendly ranges ("2 to 5", "2to5", an em dash) and refuses forms like "to 5" or "2 through 5". It checks that `mixOrder` flips exactly half the problems that can flip, never flips a square, keeps each product with its numbers, and gives the same result for the same seed. It also checks that both division layouts fit 10 rows of 10 on one page, that one-line times tables fit 5 per row by 20 rows on one page, and that one-line widths grow with the biggest numbers.
 - `tests/answer-key.test.js` covers the answer key checks. It checks every possible fact (all 20,000 times table facts, 0 to 99 by 0 to 99 in both orders, and all 9,900 division facts) using repeated addition and subtraction rather than `*` and `/`. It runs every read-back check on all four printed forms, and the sweep of 300 random sheets includes Mixed times table sheets. It makes 857 single-change mutations to a sheet and key (214 for stacked times tables, 217 for one-line times tables, 214 for stacked division, and 212 for long division), and the check must reject every one. It also checks that an unknown operation or format is refused.
 - `tests/privacy.test.js` holds the site to the privacy page's promises by reading the files as text. Pages load nothing from another site (in tags or inline styles). The stylesheet fetches only the four local font files, which must exist, and both license files must be there. No script makes network calls, uses service workers or dynamic imports, or touches cookies. The privacy page lists exactly the storage keys the pages use, and storage happens only in the save and restore code in `worksheet-ui.js`. Both worksheet pages link to the privacy page.
 

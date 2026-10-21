@@ -81,6 +81,22 @@
     return err ? null : { cols, rows };
   }
 
+  const MAX_SHEETS = 40;
+
+  /**
+   * Check how many worksheets to print. Returns the count, or null after
+   * showing the error.
+   */
+  function readSheetCount() {
+    const n = readInt("sheets", 1, MAX_SHEETS);
+    const err = n === null ? "Worksheets: use 1 to " + MAX_SHEETS + "." : "";
+    setMsg($("sheets-msg"), err, !!err, [$("sheets")]);
+    return n;
+  }
+
+  /** "1 worksheet", "3 worksheets". */
+  const sheetsText = (n) => n + (n === 1 ? " worksheet" : " worksheets");
+
   /**
    * Sheet header. Worksheet pages get Name and Date lines. Answer key pages get
    * an "Answer key" label instead, so the two can't be mixed up. Both show the
@@ -129,35 +145,41 @@
     "Turn off Answer key to print the worksheet alone.";
 
   /**
-   * Draw the summary line and every page of the sheet, then the answer key
-   * pages when the Answer key switch is on.
+   * Draw the summary line and every page of each worksheet, then the answer
+   * key pages when the Answer key switch is on: all the worksheets first, then
+   * their keys in the same order. Each worksheet has its own problems, its own
+   * header on every page, and its own sheet code.
    * opts: op ("×" or "÷"), format (how buildProblem draws a problem,
    * "stacked", "horizontal", or "long", so the check knows what to expect),
-   * problems (already dealt, each [a, b, answer]), factCount, cols, rows,
+   * worksheets (one list of dealt problems per worksheet, each problem
+   * [a, b, answer]), factCount, cols, rows,
    * layout (from WorksheetCore.layout), title, rangeText,
    * buildProblem(problem, showAnswer) -> element, and gridVars (CSS custom
    * properties set on each grid).
    *
    * Pages are built off screen, read back, and checked with
-   * WorksheetCore.verifySheets. Only pages that pass go on screen, all in one
+   * WorksheetCore.verifySheets, one worksheet at a time, each key against its
+   * own worksheet. Only pages that pass go on screen, all in one
    * step, so no print path (the button, Cmd+P, the browser menu) can reach a key
    * that wasn't confirmed, and a worksheet never sits beside another shuffle's key.
    * Returns "ok", or "failed" when a check failed (the summary says so).
    */
   function renderSheets(opts) {
-    const { op, format, problems, factCount, cols, rows, layout: L, title, rangeText, buildProblem, gridVars = {} } = opts;
+    const { op, format, worksheets, factCount, cols, rows, layout: L, title, rangeText, buildProblem, gridVars = {} } = opts;
     const withKey = $("answer-key").checked;
-    const total = problems.length;
+    const count = worksheets.length;
+    const total = cols * rows;
     const rowH = C.GRID_H / L.rowsPerPage;
     const sheet = { op, format, cols, rows, rowsPerPage: L.rowsPerPage };
 
-    // One page. The worksheet and the key both come through here with the same
-    // slice, code, and grid; only isKey differs.
-    function buildPage(slice, p, code, isKey) {
+    // One page of worksheet s. The worksheet and its key both come through
+    // here with the same slice, code, and grid; only isKey differs.
+    function buildPage(slice, s, p, code, isKey) {
       const wrap = el("section", "sheet-wrap");
       const where = L.pages > 1 ? "page " + (p + 1) + " of " + L.pages : "";
       // Preview-only label above the page (print hides it; CSS sets it in capitals).
-      const label = withKey ? (isKey ? "Answer key" : "Worksheet") + (where && ", " + where) : where;
+      const which = count > 1 ? " " + (s + 1) + " of " + count : "";
+      const label = withKey || count > 1 ? (isKey ? "Answer key" : "Worksheet") + which + (where && ", " + where) : where;
       if (label) wrap.append(el("p", "page-label", label));
       const paper = el("div", "paper");
       paper.append(buildHeader(title, rangeText + "  ·  " + total + " problems" + (where ? "  ·  " + where : ""), code, isKey));
@@ -174,28 +196,36 @@
       return wrap;
     }
 
-    // The worksheet first. If it fails its check, show nothing at all.
-    let slices, code, sheetWraps, sheetRead;
+    // The worksheets first. If any fails its check, show nothing at all.
+    let built;
     try {
-      slices = C.pageSlices(problems, cols, L.rowsPerPage);
-      code = C.sheetCode(op, cols, L.rowsPerPage, problems);
-      sheetWraps = slices.map((slice, p) => buildPage(slice, p, code, false));
-      sheetRead = sheetWraps.map(readPage);
-      C.verifySheets(sheet, sheetRead, null);
+      if (count < 1) throw new Error("no worksheets");
+      built = worksheets.map((problems, s) => {
+        const slices = C.pageSlices(problems, cols, L.rowsPerPage);
+        const code = C.sheetCode(op, cols, L.rowsPerPage, problems);
+        const wraps = slices.map((slice, p) => buildPage(slice, s, p, code, false));
+        const read = wraps.map(readPage);
+        C.verifySheets(sheet, read, null);
+        return { slices, code, wraps, read };
+      });
     } catch (e) {
       console.error("Worksheet check failed:", e);
       $("preview").replaceChildren();
       $("summary").textContent = SHEET_FAILED;
       return "failed";
     }
+    const sheetWraps = built.flatMap((b) => b.wraps);
 
-    // Then the key, from the same slices, checked against the worksheet as it
-    // was read back. If it fails, the worksheet still shows and the key doesn't.
+    // Then the keys, from the same slices, each checked against its worksheet
+    // as it was read back. If any fails, the worksheets still show and no key does.
     let keyWraps = [];
     if (withKey) {
       try {
-        keyWraps = slices.map((slice, p) => buildPage(slice, p, code, true));
-        C.verifySheets(sheet, sheetRead, keyWraps.map(readPage));
+        keyWraps = built.flatMap((b, s) => {
+          const wraps = b.slices.map((slice, p) => buildPage(slice, s, p, b.code, true));
+          C.verifySheets(sheet, b.read, wraps.map(readPage));
+          return wraps;
+        });
       } catch (e) {
         console.error("Answer key check failed:", e);
         $("preview").replaceChildren(...sheetWraps);
@@ -205,13 +235,15 @@
     }
     $("preview").replaceChildren(...sheetWraps, ...keyWraps);
 
+    const pages = count * L.pages;
     const pagesText = withKey
-      ? " Fills " + L.pages + (L.pages === 1 ? " page" : " pages") + ", plus " + L.pages + " for the answer key."
-      : L.pages > 1 ? " Fills " + L.pages + " pages." : "";
+      ? " Fills " + pages + (pages === 1 ? " page" : " pages") + ", plus " + pages + " for the answer " + (count === 1 ? "key." : "keys.")
+      : pages > 1 ? " Fills " + pages + " pages." : "";
+    const facts = [el("strong", "", total + " problems"), document.createTextNode(" from "),
+      el("strong", "", factCount + (factCount === 1 ? " fact" : " facts"))];
     $("summary").replaceChildren(
-      el("strong", "", total + " problems"), document.createTextNode(" from "),
-      el("strong", "", factCount + (factCount === 1 ? " fact" : " facts")),
-      document.createTextNode(". " + C.coverageText(total, factCount) + pagesText)
+      ...(count > 1 ? [el("strong", "", sheetsText(count)), document.createTextNode(", each with ")] : []),
+      ...facts, document.createTextNode(". " + C.coverageText(total, factCount) + pagesText)
     );
     return "ok";
   }
@@ -219,7 +251,8 @@
   /**
    * Run a worksheet page. render(seed) draws the sheet and returns "ok",
    * "failed" (a check failed and the summary says so), or "invalid" (a setting
-   * needs fixing). Valid settings are saved: text inputs listed in `fields` by
+   * needs fixing). render reads how many worksheets to make with
+   * readSheetCount. Valid settings are saved: text inputs listed in `fields` by
    * id, and anything else (like radio buttons) through getExtra/applyExtra.
    * The Answer key switch is never saved, so each visit starts with it off and
    * nobody prints a key by accident. Storage is optional and ignored if blocked.
@@ -250,7 +283,10 @@
       timer = null;
       const status = render(seed);
       $("print").disabled = status !== "ok";
-      $("print").textContent = $("answer-key").checked ? "Print worksheet and key" : "Print worksheet";
+      // While the count needs fixing, the disabled button keeps its last label.
+      const count = readInt("sheets", 1, MAX_SHEETS), key = $("answer-key").checked;
+      if (count === 1) $("print").textContent = key ? "Print worksheet and key" : "Print worksheet";
+      else if (count) $("print").textContent = "Print " + sheetsText(count) + (key ? " and keys" : "");
       // A setting that needs fixing leaves the last good sheet up, dimmed, and
       // keeps it from printing (see .stale in worksheet.css).
       $("preview").classList.toggle("stale", status === "invalid");
@@ -270,5 +306,5 @@
     run();
   }
 
-  window.WorksheetUI = { $, el, part, stackedProblem, setMsg, readRange, readGrid, renderSheets, start };
+  window.WorksheetUI = { $, el, part, stackedProblem, setMsg, readRange, readGrid, readSheetCount, renderSheets, start };
 })();

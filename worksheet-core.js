@@ -53,6 +53,19 @@
     };
   }
 
+  /**
+   * One seed per worksheet when several print at once, so each gets its own
+   * shuffle. The first is `seed` itself, so a single worksheet deals exactly as
+   * before. The rest come from a generator seeded from it, so asking for more
+   * worksheets keeps the ones already shown and adds new ones after them.
+   */
+  function sheetSeeds(seed, count) {
+    const seeds = [seed >>> 0];
+    const rand = mulberry32((seed ^ 0x5EED5EED) >>> 0);
+    while (seeds.length < count) seeds.push((rand() * 4294967296) >>> 0);
+    return seeds;
+  }
+
   /** In-place Fisher-Yates shuffle driven by the given random function. */
   function shuffle(arr, rand) {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -415,7 +428,7 @@
   }
 
   return {
-    GRID_H, STACKED_SIZE, mulberry32, parseNumberList, multiplicationFacts, mixOrder, divisionFacts,
+    GRID_H, STACKED_SIZE, mulberry32, sheetSeeds, parseNumberList, multiplicationFacts, mixOrder, divisionFacts,
     dealProblems, listLabel, longDivisionSize, horizontalSize, layout, maxColsFor, coverageText,
     checkAnswer, readWhole, pageSlices, sheetCode, verifySheets
   };

@@ -102,6 +102,16 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - [x] Review pass and the user's review of the privacy page wording.
 - [x] Commit and push, then check the live pages make no requests to other sites.
 
+## 10. Several worksheets at once
+
+- [x] "How many worksheets" field (1 to 40) on both pages. Each worksheet is shuffled on its own, with its own header and sheet code. Saved between visits.
+- [x] Shuffle again stays. It reshuffles every worksheet.
+- [x] With the answer key on: all worksheets, then their keys in the same order. Each worksheet and key is checked on its own.
+- [x] Node tests: 41 pass (`sheetSeeds`).
+- [x] Browser checks on both pages (one line, Mixed, long division, multi-page sheets, bad counts, reload), plus PDF page counts.
+- [ ] Commit and push, then check the live pages with 3 worksheets and the key on.
+- [ ] Print several worksheets on a real printer.
+
 ## Later, maybe
 
 - [x] Answer key page (optional checkbox, prints after the worksheet).
