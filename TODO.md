@@ -109,7 +109,7 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - [x] With the answer key on: all worksheets, then their keys in the same order. Each worksheet and key is checked on its own.
 - [x] Node tests: 41 pass (`sheetSeeds`).
 - [x] Browser checks on both pages (one line, Mixed, long division, multi-page sheets, bad counts, reload), plus PDF page counts.
-- [ ] Commit and push, then check the live pages with 3 worksheets and the key on.
+- [x] Commit and push, then check the live pages with 3 worksheets and the key on. Checked in the iPhone Safari print preview: one page per worksheet.
 - [x] Fix the blank page between worksheets when the browser or printer adds its own margins.
 - [x] Leave room for iPhone Safari's print footer, so the last row stays on the page.
 - [ ] Print several worksheets on a real printer, from a computer and from a phone.
