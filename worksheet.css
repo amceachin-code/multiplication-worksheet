@@ -332,21 +332,30 @@ button {
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
-/* ---------- Print: only the sheets, one per page ---------- */
+/* ---------- Print: only the sheets, one per page ----------
+   The page margins hold the 0.5 in border that the paper's padding draws on
+   screen, and the paper takes only the height it needs: the header, the gap,
+   and the grid come to exactly 10 in (GRID_H in worksheet-core.js). The bottom
+   margin is a little short of 0.5 in so rounding can't push a sheet over.
+   Phones and some browsers ignore @page margins and use the printer's own,
+   which are smaller, so the sheet still fits on one page. A fixed-height
+   paper on a zero-margin page did not: it overflowed onto a blank second page. */
 @media print {
-  @page { size: letter; margin: 0; }
+  @page { size: letter; margin: 0.5in 0.5in 0.4in; }
   html, body { background: #fff; }
   .panel, .page-label { display: none !important; }
   .app { display: block; min-height: 0; }
   .preview { display: block; padding: 0; }
   .preview.stale { display: none; }
-  .sheet-wrap { width: 8.5in; container-type: normal; }
+  .sheet-wrap { width: 7.5in; margin: 0 auto; container-type: normal; }
   .paper {
     --in: 1in;
-    width: 8.5in;
-    height: 10.97in;
+    width: 7.5in;
+    height: auto;
     aspect-ratio: auto;
+    padding: 0;
     box-shadow: none;
+    break-inside: avoid;
     break-after: page;
   }
   .sheet-wrap:last-child .paper { break-after: auto; }
