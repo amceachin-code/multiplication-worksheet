@@ -89,4 +89,5 @@ Run the 41 tests (Node 18 or later, nothing to install): `node --test tests/*.te
 - GitHub Pages serves the site from `main`, root folder.
 - It lives at https://www.andrew-mceachin.com/multiplication-worksheet/ because the user site (`amceachin-code.github.io`) carries that custom domain. Old github.io links redirect there.
 - The Students & Guardians page links to both tools: https://www.andrew-mceachin.com/tools/
+- Both worksheet pages link to the companion practice app, Times Tables Games, at https://www.andrew-mceachin.com/times-tables-games/ (its own repo, `amceachin-code/times-tables-games`).
 - `og-image.png` and `division/og-image.png` are the link preview images, 1200x630 light-mode screenshots. Regenerate them when the page design changes.
