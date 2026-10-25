@@ -1,7 +1,7 @@
 /*
  * Browser-side helpers shared by the worksheet pages: small DOM builders, the
  * sheet header, the grid renderer (the times table and division pages; the
- * Halloween page draws its own picture), saved settings, and event wiring.
+ * Color by Number page draws its own pictures), saved settings, and event wiring.
  * Attaches to window.WorksheetUI. Needs worksheet-core.js loaded first.
  */
 (function () {

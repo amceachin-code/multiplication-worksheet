@@ -1,7 +1,7 @@
 /*
- * The jack-o'-lantern on the Halloween color-by-number page. Made by
- * tools/jack-o-lantern.js: change the drawing there and run it again, rather
- * than editing this file.
+ * "Jack-o'-lantern", a picture for the Color by Number page. Made by
+ * tools/color-by-number/jack-o-lantern.js: change the drawing there and run
+ * it again, rather than editing this file.
  *
  * Units are hundredths of an inch. Each region is one space to color: its
  * color, its outline (d, an SVG path), and its label spot, the center (x, y)
@@ -12,9 +12,10 @@
  */
 (function (root, picture) {
   if (typeof module === "object" && module.exports) module.exports = picture;
-  else root.JackOLantern = picture;
+  else (root.ColorByNumberPictures = root.ColorByNumberPictures || []).push(picture);
 })(this, {
   "name": "jack-o-lantern",
+  "title": "Jack-o'-lantern",
   "width": 750,
   "height": 660,
   "labelPt": 12,

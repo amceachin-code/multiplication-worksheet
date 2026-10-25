@@ -4,8 +4,8 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 
 ## Current state
 
-- `index.html` (times tables), `division/index.html`, and `halloween/index.html` (color by number) share `worksheet.css`, `worksheet-core.js`, and `worksheet-ui.js`. No build step. The Halloween picture comes from `tools/jack-o-lantern.js`, run by hand after changing the drawing.
-- All three pages can print an answer key. With the Answer key switch on, key pages print after the worksheet pages, and a sheet code matches each key to its sheet. The Halloween key is the finished picture, colored in.
+- `index.html` (times tables), `division/index.html`, and `color-by-number/index.html` share `worksheet.css`, `worksheet-core.js`, and `worksheet-ui.js`. No build step. Each Color by Number picture comes from a drawing in `tools/color-by-number/`, run by hand after changing it.
+- All three pages can print an answer key. With the Answer key switch on, key pages print after the worksheet pages, and a sheet code matches each key to its sheet. The Color by Number key is the finished picture, colored in.
 - Tested in headless Chrome: default settings (4s, ×1 to 10, 10×10) print on one letter page. 250 problems across 3 tables split onto 3 pages. Each fact appears equally often, with no back-to-back repeats.
 - Node tests live in four files: `tests/worksheet-core.test.js`, `tests/answer-key.test.js`, `tests/color-by-number.test.js`, and `tests/privacy.test.js`.
 - Fonts (Andika, Atkinson Hyperlegible) are served from `fonts/` on this site, with their licenses.
@@ -114,18 +114,20 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - [x] Leave room for iPhone Safari's print footer, so the last row stays on the page.
 - [ ] Print several worksheets on a real printer, from a computer and from a phone.
 
-## 11. Halloween color by number
+## 11. Color by Number
 
-- [x] A jack-o'-lantern picture in 38 spaces, drawn by `tools/jack-o-lantern.js` (Node, nothing to install). Every space holds a 12 pt "99 × 99".
-- [x] Page `halloween/index.html`: times tables, range, First, Second, or Mixed, title, number of worksheets, and the answer key. Saved between visits under `halloween-worksheets:v1`.
+- [x] A color-by-number page for times tables, with a Picture menu, so it can hold many pictures, holiday or not. The first is a jack-o'-lantern in 38 spaces, drawn by `tools/color-by-number/jack-o-lantern.js` (Node, nothing to install). Every space holds a 12 pt "99 × 99".
+- [x] Page `color-by-number/index.html`: times tables, range, picture, First, Second, or Mixed, title, number of worksheets, and the answer key. Saved between visits under `color-by-number:v1`.
 - [x] Color key: each answer goes with one color, by how many spaces each color has, and the key lists only the answers on the sheet.
 - [x] Answer key: the finished picture, painted, with each answer in bold. Read-back check of each worksheet and key.
-- [x] Node tests: 59 pass (18 new in `tests/color-by-number.test.js`, with 323 single-change mutations).
-- [x] Browser checks (10 settings, every label inside its space and off the lines, phone width, dark mode, 40 worksheets) and PDF read-back (problems, answers, key colors, and the color key, 7 sheets).
+- [x] A shared drawing kit (`tools/color-by-number/kit.js`), so a new picture is one new drawing file and one script tag. The tests check every picture in `color-by-number/pictures/`.
+- [x] Node tests: 60 pass (19 in `tests/color-by-number.test.js`, with 323 single-change mutations).
+- [x] Browser checks (10 settings, every label inside its space and off the lines, a second picture in the menu, phone width, dark mode, 40 worksheets) and PDF read-back (problems, answers, key colors, and the color key, 7 sheets).
 - [x] Links from the other two pages, the privacy page, and a link preview image.
-- [ ] Merge to `main`, then check the live page with the key on.
+- [x] Listed on the Students & Guardians page, under Math Worksheets, on a branch of `amceachin-code.github.io`.
+- [ ] Merge this repo's branch to `main` first, then the website's, so the tools page never links to a page that isn't live yet. Then check both live pages.
 - [ ] Print a worksheet and key on a real printer, in color and in black and white, and from a phone.
-- [ ] Maybe add it to the Students & Guardians tools page in `academic-site`.
+- [ ] More pictures.
 
 ## Later, maybe
 
