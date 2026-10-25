@@ -11,9 +11,12 @@ const path = require("node:path");
 
 const root = path.join(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
-const WORKSHEET_PAGES = ["index.html", "division/index.html", "halloween/index.html"];
+const WORKSHEET_PAGES = ["index.html", "division/index.html", "color-by-number/index.html"];
 const PAGES = [...WORKSHEET_PAGES, "privacy/index.html"];
-const SCRIPTS = ["worksheet-core.js", "worksheet-ui.js", "halloween/color-by-number.js", "halloween/jack-o-lantern.js"];
+// Every Color by Number picture is a script too.
+const PICTURES = fs.readdirSync(path.join(root, "color-by-number", "pictures")).filter((f) => f.endsWith(".js"))
+  .map((f) => "color-by-number/pictures/" + f);
+const SCRIPTS = ["worksheet-core.js", "worksheet-ui.js", "color-by-number/color-by-number.js", ...PICTURES];
 
 /** Inline <script> blocks of a page, so page code is checked like the shared scripts. */
 const inlineScripts = (html) => [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
@@ -80,5 +83,5 @@ test("the privacy page lists exactly the storage keys the pages use", () => {
 test("every worksheet page links to the privacy page", () => {
   assert.match(read("index.html"), /<a href="privacy\/">Privacy and data<\/a>/);
   assert.match(read("division/index.html"), /<a href="\.\.\/privacy\/">Privacy and data<\/a>/);
-  assert.match(read("halloween/index.html"), /<a href="\.\.\/privacy\/">Privacy and data<\/a>/);
+  assert.match(read("color-by-number/index.html"), /<a href="\.\.\/privacy\/">Privacy and data<\/a>/);
 });

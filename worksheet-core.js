@@ -1,6 +1,6 @@
 /*
- * Pure logic shared by the worksheet pages (times tables, division, and the
- * Halloween color-by-number page): parsing, fact building, dealing, labels,
+ * Pure logic shared by the worksheet pages (times tables, division, and
+ * Color by Number): parsing, fact building, dealing, labels,
  * layout math, sheet codes, and the answer key checks.
  * No DOM here, so Node tests can load it (tests/worksheet-core.test.js).
  * In the browser it attaches to window.WorksheetCore; in Node it is module.exports.

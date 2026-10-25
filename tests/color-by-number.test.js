@@ -1,20 +1,27 @@
-// Tests for the Halloween color-by-number page: the picture itself, how
-// answers and problems are shared out, and the read-back check that guards
-// each worksheet and answer key. Run with: node --test tests/*.test.js
+// Tests for the Color by Number page: every picture, how answers and
+// problems are shared out, and the read-back check that guards each worksheet
+// and answer key. Run with: node --test tests/*.test.js
 "use strict";
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const C = require("../worksheet-core.js");
-const K = require("../halloween/color-by-number.js");
-const P = require("../halloween/jack-o-lantern.js");
+const K = require("../color-by-number/color-by-number.js");
+const kit = require("../tools/color-by-number/kit.js");
+
+// Every picture in the folder. The planning and read-back tests use the
+// jack-o'-lantern; the picture tests run on each picture.
+const PICTURE_DIR = path.join(__dirname, "..", "color-by-number", "pictures");
+const PICTURE_FILES = fs.readdirSync(PICTURE_DIR).filter((f) => f.endsWith(".js")).sort();
+const PICTURES = PICTURE_FILES.map((f) => require(path.join(PICTURE_DIR, f)));
+const P = PICTURES.find((p) => p.name === "jack-o-lantern");
 
 const range = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => from + i);
 
-// ---------- The picture ----------
-// Geometry here is written fresh, not shared with tools/jack-o-lantern.js,
-// so a slip in the tool can't hide behind the same slip in its check.
+// ---------- The pictures ----------
+// Geometry here is written fresh, not shared with tools/color-by-number/kit.js,
+// so a slip in the kit can't hide behind the same slip in its check.
 
 /** The closed rings of an SVG path written as "Mx y x y ...Z", one per subpath. */
 function rings(d) {
@@ -68,101 +75,114 @@ function segDist(p, [a, b]) {
   return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy);
 }
 
-const REGIONS = P.regions.map((r) => ({ ...r, rings: rings(r.d) }));
-
-test("the picture's spaces have unique ids in order and use only palette colors, every color at least once", () => {
-  assert.deepEqual(P.regions.map((r) => r.id), P.regions.map((_, i) => "r" + (i + 1)));
-  const palette = K.PALETTE.map((p) => p.color);
-  for (const r of P.regions) assert.ok(palette.includes(r.color), r.id + " " + r.color);
-  assert.deepEqual(K.pictureColors(P).map((c) => c.color), palette);
-  assert.equal(P.regions.length, 38);
+test("the page offers every picture in the folder, each named for its file", () => {
+  const html = fs.readFileSync(path.join(__dirname, "..", "color-by-number", "index.html"), "utf8");
+  const loaded = [...html.matchAll(/<script src="pictures\/([\w-]+\.js)"><\/script>/g)].map((m) => m[1]);
+  assert.deepEqual(loaded.slice().sort(), PICTURE_FILES);
+  PICTURES.forEach((p, i) => assert.equal(p.name + ".js", PICTURE_FILES[i]));
+  assert.equal(new Set(PICTURES.map((p) => p.title)).size, PICTURES.length, "every title differs");
+  assert.ok(P, "the jack-o'-lantern is one of them");
 });
 
-test("the spaces cover the picture exactly, with no gaps and no overlaps", () => {
-  const total = REGIONS.reduce((s, r) => s + area(r.rings[0]) - r.rings.slice(1).reduce((h, ring) => h + area(ring), 0), 0);
-  assert.ok(Math.abs(total - P.width * P.height) < 1e-6 * P.width * P.height, `area ${total}`);
-  // Points on a grid each lie in exactly one space, unless they sit on a border.
-  const segs = REGIONS.flatMap((r) => r.rings.flatMap(ringSegs));
-  let checked = 0;
-  for (let y = 2.5; y < P.height; y += 5) {
-    for (let x = 2.5; x < P.width; x += 5) {
-      const n = REGIONS.filter((r) => inRegion([x, y], r.rings)).length;
-      if (n !== 1) assert.ok(segs.some((s) => segDist([x, y], s) < 0.01), `${x}, ${y} is in ${n} spaces`);
-      checked++;
-    }
-  }
-  assert.ok(checked > 19000);
-});
+for (const picture of PICTURES) {
+  const name = picture.name;
+  const regions = picture.regions.map((r) => ({ ...r, rings: rings(r.d) }));
 
-test("every border between spaces is drawn: thick where the color changes, thin between spaces of one color", () => {
-  const key = (p, q) => p.join(" ") + "|" + q.join(" ");
-  const drawn = new Map();
-  for (const [name, d] of [["outline", P.outline], ["inner", P.inner]]) {
-    for (const line of polylines(d)) {
-      for (let i = 0; i + 1 < line.length; i++) {
-        drawn.set(key(line[i], line[i + 1]), name);
-        drawn.set(key(line[i + 1], line[i]), name);
+  test(`${name}: spaces have ids in order and palette colors`, () => {
+    assert.deepEqual(picture.regions.map((r) => r.id), picture.regions.map((_, i) => "r" + (i + 1)));
+    const palette = K.PALETTE.map((p) => p.color);
+    for (const r of picture.regions) assert.ok(palette.includes(r.color), r.id + " " + r.color);
+    assert.ok(K.pictureColors(picture).length >= 2);
+    assert.deepEqual([picture.width, picture.height], [kit.W, kit.H], "every picture fits the room below the color key");
+  });
+
+  test(`${name}: the spaces cover the picture exactly, with no gaps and no overlaps`, () => {
+    const total = regions.reduce((s, r) => s + area(r.rings[0]) - r.rings.slice(1).reduce((h, ring) => h + area(ring), 0), 0);
+    assert.ok(Math.abs(total - picture.width * picture.height) < 1e-6 * picture.width * picture.height, `area ${total}`);
+    // Points on a grid each lie in exactly one space, unless they sit on a border.
+    const segs = regions.flatMap((r) => r.rings.flatMap(ringSegs));
+    let checked = 0;
+    for (let y = 2.5; y < picture.height; y += 5) {
+      for (let x = 2.5; x < picture.width; x += 5) {
+        const n = regions.filter((r) => inRegion([x, y], r.rings)).length;
+        if (n !== 1) assert.ok(segs.some((s) => segDist([x, y], s) < 0.01), `${x}, ${y} is in ${n} spaces`);
+        checked++;
       }
     }
-  }
-  // Each border segment of a space is a drawn segment, and it borders at most one other space.
-  const sides = new Map();
-  for (const r of REGIONS) {
-    for (const ring of r.rings) {
-      for (const [p, q] of ringSegs(ring)) {
-        const k = key(p, q);
-        assert.ok(drawn.has(k), `${r.id}: border ${k} isn't drawn`);
-        const both = [k, key(q, p)].sort()[0];
-        sides.set(both, (sides.get(both) || []).concat(r));
+    assert.equal(checked, (picture.width / 5) * (picture.height / 5));
+  });
+
+  test(`${name}: every border is drawn, thick where the color changes and thin between spaces of one color`, () => {
+    const key = (p, q) => p.join(" ") + "|" + q.join(" ");
+    const drawn = new Map();
+    for (const [kind, d] of [["outline", picture.outline], ["inner", picture.inner]]) {
+      for (const line of polylines(d)) {
+        for (let i = 0; i + 1 < line.length; i++) {
+          drawn.set(key(line[i], line[i + 1]), kind);
+          drawn.set(key(line[i + 1], line[i]), kind);
+        }
       }
     }
-  }
-  for (const [k, rs] of sides) {
-    assert.ok(rs.length === 1 || rs.length === 2, k);
-    const onFrame = rs.length === 1;
-    const want = onFrame || rs[0].color !== rs[1].color ? "outline" : "inner";
-    assert.equal(drawn.get(k), want, `${k} between ${rs.map((r) => r.id + " " + r.color)}`);
-    if (onFrame) {
-      const [p, q] = k.split("|").map((s) => s.split(" ").map(Number));
-      const edge = (v, lim) => v === 0 || v === lim;
-      assert.ok((p[0] === q[0] && edge(p[0], P.width)) || (p[1] === q[1] && edge(p[1], P.height)), `${k} has one side but isn't on the frame`);
-    }
-  }
-  // And nothing else is drawn.
-  assert.equal(drawn.size, sides.size * 2);
-});
-
-test("every space holds the widest label, 99 × 99, at labelPt, clear of its borders", () => {
-  const em = (P.labelPt * 100) / 72;
-  assert.equal(P.labelPt, 12);
-  // The label's box: "99 × 99" is 3.37 em wide in Andika (four digits and the
-  // × sign at 0.586 em each, plus 0.22 em of air on each side of the sign).
-  assert.ok(P.labelEm.w >= 4 * 0.586 + 0.586 + 2 * 0.22 + 0.5 && P.labelEm.h >= 1.2 + 0.3);
-  for (const r of REGIONS) {
-    assert.ok(r.w >= P.labelEm.w * em && r.h >= P.labelEm.h * em, `${r.id}: ${r.w} x ${r.h}`);
-    const [x0, y0, x1, y1] = [r.x - r.w / 2, r.y - r.h / 2, r.x + r.w / 2, r.y + r.h / 2];
-    const corners = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
-    for (const c of corners) assert.ok(inRegion(c, r.rings), `${r.id}: corner ${c} outside`);
-    const edges = ringSegs(corners);
-    for (const ring of r.rings) {
-      for (const s of ringSegs(ring)) {
-        assert.ok(!edges.some((e) => crosses(e, s)), `${r.id}: a border crosses the label box`);
-        const [p] = s;
-        assert.ok(!(p[0] > x0 && p[0] < x1 && p[1] > y0 && p[1] < y1), `${r.id}: a border inside the label box`);
+    // Each border segment of a space is a drawn segment, and it borders at most one other space.
+    const sides = new Map();
+    for (const r of regions) {
+      for (const ring of r.rings) {
+        for (const [p, q] of ringSegs(ring)) {
+          const k = key(p, q);
+          assert.ok(drawn.has(k), `${r.id}: border ${k} isn't drawn`);
+          const both = [k, key(q, p)].sort()[0];
+          sides.set(both, (sides.get(both) || []).concat(r));
+        }
       }
     }
-    // The label's center is in its own space and no other.
-    assert.deepEqual(REGIONS.filter((o) => inRegion([r.x, r.y], o.rings)).map((o) => o.id), [r.id]);
-  }
-});
+    for (const [k, rs] of sides) {
+      assert.ok(rs.length === 1 || rs.length === 2, k);
+      const onFrame = rs.length === 1;
+      const want = onFrame || rs[0].color !== rs[1].color ? "outline" : "inner";
+      assert.equal(drawn.get(k), want, `${k} between ${rs.map((r) => r.id + " " + r.color)}`);
+      if (onFrame) {
+        const [p, q] = k.split("|").map((s) => s.split(" ").map(Number));
+        const edge = (v, lim) => v === 0 || v === lim;
+        assert.ok((p[0] === q[0] && edge(p[0], picture.width)) || (p[1] === q[1] && edge(p[1], picture.height)), `${k} has one side but isn't on the frame`);
+      }
+    }
+    // And nothing else is drawn.
+    assert.equal(drawn.size, sides.size * 2);
+  });
 
-test("the picture file is what tools/jack-o-lantern.js draws", () => {
-  const tool = require("../tools/jack-o-lantern.js");
-  const file = fs.readFileSync(path.join(__dirname, "..", "halloween", "jack-o-lantern.js"), "utf8");
-  assert.equal(tool.fileText(tool.build()), file, "run node tools/jack-o-lantern.js");
-  assert.equal(tool.LABEL_PT, P.labelPt);
-  assert.deepEqual(tool.LABEL_EM, P.labelEm);
-});
+  test(`${name}: every space holds the widest label, 99 × 99, at labelPt, clear of its borders`, () => {
+    const em = (picture.labelPt * 100) / 72;
+    assert.ok(picture.labelPt >= 11, "the sheets' smallest size");
+    // The label's box: "99 × 99" is 3.37 em wide in Andika (four digits and the
+    // × sign at 0.586 em each, plus 0.22 em of air on each side of the sign).
+    assert.ok(picture.labelEm.w >= 4 * 0.586 + 0.586 + 2 * 0.22 + 0.5 && picture.labelEm.h >= 1.2 + 0.3);
+    for (const r of regions) {
+      assert.ok(r.w >= picture.labelEm.w * em && r.h >= picture.labelEm.h * em, `${r.id}: ${r.w} x ${r.h}`);
+      const [x0, y0, x1, y1] = [r.x - r.w / 2, r.y - r.h / 2, r.x + r.w / 2, r.y + r.h / 2];
+      const corners = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
+      for (const c of corners) assert.ok(inRegion(c, r.rings), `${r.id}: corner ${c} outside`);
+      const edges = ringSegs(corners);
+      for (const ring of r.rings) {
+        for (const s of ringSegs(ring)) {
+          assert.ok(!edges.some((e) => crosses(e, s)), `${r.id}: a border crosses the label box`);
+          const [p] = s;
+          assert.ok(!(p[0] > x0 && p[0] < x1 && p[1] > y0 && p[1] < y1), `${r.id}: a border inside the label box`);
+        }
+      }
+      // The label's center is in its own space and no other.
+      assert.deepEqual(regions.filter((o) => inRegion([r.x, r.y], o.rings)).map((o) => o.id), [r.id]);
+    }
+  });
+
+  test(`${name}: the file is what its drawing makes`, () => {
+    const drawing = require(`../tools/color-by-number/${name}.js`);
+    const file = fs.readFileSync(path.join(PICTURE_DIR, name + ".js"), "utf8");
+    assert.equal(kit.fileText(drawing, kit.build(drawing)), file, `run node tools/color-by-number/${name}.js`);
+    assert.equal(drawing.title, picture.title);
+    assert.equal(kit.LABEL_PT, picture.labelPt);
+    assert.deepEqual(kit.LABEL_EM, picture.labelEm);
+  });
+}
 
 // ---------- Planning a sheet ----------
 
@@ -298,7 +318,7 @@ test("sheetCode changes with any problem, the color key, or the picture", () => 
 
 // ---------- The read-back check ----------
 // Pages shaped like the browser's read-back of a worksheet or key (see
-// readPage in halloween/index.html).
+// readPage in color-by-number/index.html).
 
 const FILL = new Map(K.PALETTE.map((p) => [p.color, p.fill]));
 

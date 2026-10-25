@@ -1,7 +1,8 @@
 /*
- * Pure logic for the Halloween color-by-number page: which answers go with
- * which color, which problem goes in which space, the summary line, the sheet
- * code, and the read-back check of each worksheet and answer key.
+ * Pure logic for the Color by Number page, for any of its pictures: which
+ * answers go with which color, which problem goes in which space, the summary
+ * line, the sheet code, and the read-back check of each worksheet and answer
+ * key.
  * No DOM here, so Node tests can load it (tests/color-by-number.test.js).
  * Needs worksheet-core.js. In the browser it attaches to window.ColorByNumber;
  * in Node it is module.exports.
@@ -14,7 +15,8 @@
 
   // The crayons, in the order the color key lists them. `fill` paints the
   // answer key and the color key's swatches. Each is light enough to read
-  // black numbers on.
+  // black numbers on. A picture may use any of them; a new picture that needs
+  // another color adds it here, with a fill black numbers can be read on.
   const PALETTE = Object.freeze([
     { color: "orange", name: "Orange", fill: "#f5922a" },
     { color: "yellow", name: "Yellow", fill: "#ffd84a" },

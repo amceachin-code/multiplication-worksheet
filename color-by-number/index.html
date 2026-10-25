@@ -3,24 +3,38 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Halloween Color by Number</title>
+<title>Color by Number</title>
 <!-- Link previews: group texts and class emails show this title, text, and image. OG URLs must be absolute. -->
-<meta name="description" content="Free printable Halloween color-by-number worksheets. Pick the times tables, then print. Students solve each problem and color a jack-o'-lantern by the answers. Nothing to sign up for, and nothing is collected.">
+<meta name="description" content="Free printable color-by-number worksheets for times table practice. Pick the times tables and a picture, then print. Students solve each problem and color its space by the answer. Nothing to sign up for, and nothing is collected.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Halloween Color by Number">
-<meta property="og:description" content="Free printable color-by-number worksheets. Pick the times tables, then print. Students color a jack-o'-lantern by the answers.">
-<meta property="og:url" content="https://www.andrew-mceachin.com/multiplication-worksheet/halloween/">
-<meta property="og:image" content="https://www.andrew-mceachin.com/multiplication-worksheet/halloween/og-image.png">
+<meta property="og:title" content="Color by Number">
+<meta property="og:description" content="Free printable color-by-number worksheets. Pick the times tables and a picture, then print. Students color the picture by the answers.">
+<meta property="og:url" content="https://www.andrew-mceachin.com/multiplication-worksheet/color-by-number/">
+<meta property="og:image" content="https://www.andrew-mceachin.com/multiplication-worksheet/color-by-number/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<!-- Inline SVG favicon: a pencil-yellow tile with a pumpkin, so there is no extra file to serve. -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f5c13e'/%3E%3Cpath d='M16 11c0-2.5 1-4 3-5' fill='none' stroke='%232a2206' stroke-width='2.6' stroke-linecap='round'/%3E%3Cellipse cx='16' cy='19' rx='10.5' ry='8' fill='%23f5922a' stroke='%232a2206' stroke-width='2.2'/%3E%3Cpath d='M16 11.5v15' stroke='%232a2206' stroke-width='1.6'/%3E%3C/svg%3E">
+<!-- Inline SVG favicon: a pencil-yellow tile with four colored squares, like a color key, so there is no extra file to serve. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f5c13e'/%3E%3Cg stroke='%232a2206' stroke-width='1.8'%3E%3Crect x='6' y='6' width='9' height='9' rx='2' fill='%23f5922a'/%3E%3Crect x='17' y='6' width='9' height='9' rx='2' fill='%239f80d4'/%3E%3Crect x='6' y='17' width='9' height='9' rx='2' fill='%236cbf5a'/%3E%3Crect x='17' y='17' width='9' height='9' rx='2' fill='%23ffffff'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="stylesheet" href="../worksheet.css">
 <style>
 /* Page-only styles. Shared layout, panel, paper, and print rules are in
    worksheet.css. Below the header, the color key (1.3 in), the gap, and the
    picture (6.6 in) fill the 8.05 in the other pages give their grids. */
+
+/* The Picture menu, styled like the text and number fields in worksheet.css. */
+select {
+  font: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  width: 100%;
+  min-width: 0;
+}
+select:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 
 /* The color key: one row per color, each on one line: a swatch, the color's
    name, then its answers. Sizes in em follow the key's font size, which
@@ -65,8 +79,8 @@
 <div class="app">
   <aside class="panel">
     <div class="brand">
-      <h1>Halloween Color by Number</h1>
-      <p>Pick the times tables, then click Print worksheet. Students solve each problem, then color its space by the answer. The sheet updates as you type.</p>
+      <h1>Color by Number</h1>
+      <p>Pick the times tables and a picture, then click Print worksheet. Students solve each problem, then color its space by the answer. The sheet updates as you type.</p>
       <p class="cross-link"><a href="../">Times table worksheets</a> · <a href="../division/">Division worksheets</a> · <a href="https://www.andrew-mceachin.com/times-tables-games/">Practice online</a></p>
     </div>
 
@@ -88,6 +102,15 @@
         </div>
         <span id="range-msg" class="err" hidden></span>
         <span id="facts-msg" class="err" hidden></span>
+      </fieldset>
+
+      <fieldset>
+        <legend>Picture</legend>
+        <!-- One option per picture loaded below, filled in by the page script. -->
+        <label for="picture">Picture to color
+          <select id="picture" aria-describedby="picture-hint"></select>
+        </label>
+        <span id="picture-hint" class="hint"></span>
       </fieldset>
 
       <fieldset>
@@ -131,27 +154,38 @@
 
 <script src="../worksheet-core.js"></script>
 <script src="../worksheet-ui.js"></script>
-<script src="jack-o-lantern.js"></script>
 <script src="color-by-number.js"></script>
+<!-- The pictures, one file each, made by the drawings in tools/color-by-number/. The Picture menu lists them in this order. -->
+<script src="pictures/jack-o-lantern.js"></script>
 <script>
 (function () {
   "use strict";
 
   // Shared logic lives in worksheet-core.js (pure) and worksheet-ui.js (DOM).
-  // This page's own logic is in color-by-number.js (pure), and its picture,
-  // drawn by tools/jack-o-lantern.js, in jack-o-lantern.js.
+  // This page's own logic is in color-by-number.js (pure). Each picture is a
+  // file in pictures/, drawn by its drawing in tools/color-by-number/.
   const C = window.WorksheetCore, UI = window.WorksheetUI, K = window.ColorByNumber, $ = UI.$;
-  const PICTURE = window.JackOLantern;
-  const COLORS = K.pictureColors(PICTURE);
+  const PICTURES = window.ColorByNumberPictures;   // in the order the script tags load them
   const TABLES_HINT = "One or more, like 4, or 3 4 6, or 2 to 5";
   const TABLES_ERRORS = {
     empty: "Enter at least one times table, like 4.",
     format: "Use whole numbers from 0 to 99, like 4, or 3 4 6, or 2 to 5."
   };
-  // Labels are PICTURE.labelPt points, in the picture's hundredths of an inch,
-  // with the same air on each side of × as the times table page's one-line problems.
-  const LABEL_SIZE = (PICTURE.labelPt * 100) / 72;
-  const SIGN_PAD = (0.22 * LABEL_SIZE).toFixed(2);
+
+  // The Picture menu, one option per picture. Filled in before saved settings
+  // are restored, so a saved choice can find its option.
+  for (const picture of PICTURES) {
+    const option = UI.el("option", "", picture.title);
+    option.value = picture.name;
+    $("picture").append(option);
+  }
+
+  /** The chosen picture. A saved choice that's no longer offered falls back to the first. */
+  function readPicture() {
+    const picture = PICTURES.find((p) => p.name === $("picture").value) || PICTURES[0];
+    $("picture").value = picture.name;
+    return picture;
+  }
 
   /** Where the table number goes: "top" (first), "bottom" (second), or "mixed". */
   const readPos = () => ["top", "bottom", "mixed"].find((v) => $("pos-" + v).checked) || "top";
@@ -197,31 +231,34 @@
    * onto a worksheet. data-part marks each piece of a label, so the check can
    * read it back, as on the other pages.
    */
-  function buildPicture(problems, showAnswers) {
+  function buildPicture(picture, problems, showAnswers) {
     const key = showAnswers === true;
-    const fill = new Map(COLORS.map((c) => [c.color, c.fill]));
+    const fill = new Map(K.PALETTE.map((c) => [c.color, c.fill]));
+    // Labels are picture.labelPt points, in the picture's hundredths of an inch,
+    // with the same air on each side of × as the times table page's one-line problems.
+    const size = (picture.labelPt * 100) / 72, pad = (0.22 * size).toFixed(2);
     // translate="no": browser translation must not rewrite the numbers.
     const svg = svgEl("svg", {
-      class: "cbn-picture", viewBox: "0 0 " + PICTURE.width + " " + PICTURE.height, role: "img", translate: "no",
-      "aria-label": "A jack-o'-lantern picture with " + PICTURE.regions.length + " spaces to color" + (key ? ", colored in" : "")
+      class: "cbn-picture", viewBox: "0 0 " + picture.width + " " + picture.height, role: "img", translate: "no",
+      "aria-label": picture.title + ", a picture with " + picture.regions.length + " spaces to color" + (key ? ", colored in" : "")
     });
     const spaces = svgEl("g", { class: "cbn-spaces" });
     const lines = svgEl("g", { class: "cbn-lines" });
-    const labels = svgEl("g", { class: "cbn-labels", "font-size": LABEL_SIZE.toFixed(3) });
+    const labels = svgEl("g", { class: "cbn-labels", "font-size": size.toFixed(3) });
     const part = (name, text, attrs) => {
       const n = svgEl("tspan", Object.assign({ "data-part": name }, attrs));
       n.textContent = text;
       return n;
     };
-    PICTURE.regions.forEach((r, i) => {
+    picture.regions.forEach((r, i) => {
       spaces.append(svgEl("path", { "data-region": r.id, d: r.d, fill: key ? fill.get(r.color) : K.BLANK, "fill-rule": "evenodd" }));
       const label = svgEl("text", { "data-region": r.id, x: String(r.x), y: String(r.y) });
       const [a, b, product] = problems[i];
       if (key) label.append(part("answer", String(product)));
-      else label.append(part("a", String(a)), part("sign", "×", { dx: SIGN_PAD }), part("b", String(b), { dx: SIGN_PAD }));
+      else label.append(part("a", String(a)), part("sign", "×", { dx: pad }), part("b", String(b), { dx: pad }));
       labels.append(label);
     });
-    lines.append(svgEl("path", { class: "outline", d: PICTURE.outline }), svgEl("path", { class: "inner", d: PICTURE.inner }));
+    lines.append(svgEl("path", { class: "outline", d: picture.outline }), svgEl("path", { class: "inner", d: picture.inner }));
     svg.append(spaces, lines, labels);
     return svg;
   }
@@ -264,10 +301,10 @@
    * reach a page that wasn't confirmed. Works like WorksheetUI.renderSheets.
    * Returns "ok", or "failed" when a check failed (the summary says so).
    */
-  function renderSheets(plans, factCount, title, rangeText) {
+  function renderSheets(picture, plans, factCount, title, rangeText) {
     const withKey = $("answer-key").checked;
     const count = plans.length;
-    const meta = rangeText + "  ·  " + PICTURE.regions.length + " problems";
+    const meta = rangeText + "  ·  " + picture.regions.length + " problems";
 
     function buildPage(plan, s, code, isKey) {
       const wrap = UI.el("section", "sheet-wrap");
@@ -275,7 +312,7 @@
       const which = count > 1 ? " " + (s + 1) + " of " + count : "";
       if (withKey || count > 1) wrap.append(UI.el("p", "page-label", (isKey ? "Answer key" : "Worksheet") + which));
       const paper = UI.el("div", "paper");
-      paper.append(UI.buildHeader(title, meta, code, isKey), buildKey(plan.key), buildPicture(plan.printed, isKey));
+      paper.append(UI.buildHeader(title, meta, code, isKey), buildKey(plan.key), buildPicture(picture, plan.printed, isKey));
       wrap.append(paper);
       return wrap;
     }
@@ -284,10 +321,10 @@
     let built;
     try {
       built = plans.map((plan, s) => {
-        const code = K.sheetCode(PICTURE, plan.printed, plan.key);
+        const code = K.sheetCode(picture, plan.printed, plan.key);
         const wrap = buildPage(plan, s, code, false);
         const read = readPage(wrap);
-        K.verifySheet(PICTURE, read, null);
+        K.verifySheet(picture, read, null);
         return { plan, code, wrap, read };
       });
     } catch (e) {
@@ -305,7 +342,7 @@
       try {
         keyWraps = built.map((b, s) => {
           const wrap = buildPage(b.plan, s, b.code, true);
-          K.verifySheet(PICTURE, b.read, readPage(wrap));
+          K.verifySheet(picture, b.read, readPage(wrap));
           return wrap;
         });
       } catch (e) {
@@ -322,14 +359,20 @@
       : count > 1 ? " Fills " + count + " pages." : "";
     $("summary").replaceChildren(
       ...(count > 1 ? [UI.el("strong", "", UI.sheetsText(count)), document.createTextNode(", each with ")] : []),
-      UI.el("strong", "", PICTURE.regions.length + " problems"), document.createTextNode(" from "),
+      UI.el("strong", "", picture.regions.length + " problems"), document.createTextNode(" from "),
       UI.el("strong", "", factCount + (factCount === 1 ? " fact" : " facts")),
-      document.createTextNode(", in " + COLORS.length + " colors. " + K.coverageText(plans.map((p) => p.problems), factCount) + pagesText)
+      document.createTextNode(", in " + K.pictureColors(picture).length + " colors. " + K.coverageText(plans.map((p) => p.problems), factCount) + pagesText)
     );
     return "ok";
   }
 
   function render(seed) {
+    // The picture first: it says how many colors the facts must cover.
+    const picture = readPicture();
+    const colors = K.pictureColors(picture);
+    const names = colors.map((c) => c.name.toLowerCase());
+    $("picture-hint").textContent = picture.regions.length + " problems. Crayons: " +
+      (names.length > 1 ? names.slice(0, -1).join(", ") + ", and " + names[names.length - 1] : names[0]) + ".";
     // Check every field first so all errors show at once.
     const parsed = C.parseNumberList($("tables").value, 0);
     UI.setMsg($("tables-msg"), parsed.error ? TABLES_ERRORS[parsed.error] : TABLES_HINT, !!parsed.error, [$("tables")]);
@@ -342,9 +385,9 @@
     // Each color needs answers of its own, so the facts need as many different
     // answers as the picture has colors. The 0s alone have just one.
     const answers = facts ? new Set(facts.map((f) => f[2])).size : 0;
-    const tooFew = !!facts && answers < COLORS.length;
+    const tooFew = !!facts && answers < colors.length;
     UI.setMsg($("facts-msg"), tooFew ? "These facts have only " + answers + (answers === 1 ? " answer" : " different answers") +
-      ", and the picture needs " + COLORS.length + ", one for each color. Add a times table or widen the range." : "",
+      ", and the picture needs " + colors.length + ", one for each color. Add a times table or widen the range." : "",
       tooFew, tooFew ? [$("tables"), $("from"), $("to")] : []);
     if (!facts || tooFew || !count) return "invalid";
 
@@ -352,18 +395,18 @@
     // switching to Mixed keeps the problems and only flips half of them.
     const plans = C.sheetSeeds(seed, count).map((s) => {
       const rand = C.mulberry32(s);
-      const plan = K.planSheet(PICTURE, facts, rand);
+      const plan = K.planSheet(picture, facts, rand);
       return Object.assign(plan, { printed: pos === "mixed" ? C.mixOrder(plan.problems, rand) : plan.problems });
     });
 
     const autoTitle = "Color by Number: " + C.listLabel(tables, "s");
     $("title").placeholder = autoTitle;
-    return renderSheets(plans, facts.length, $("title").value.trim() || autoTitle, "× " + range.from + " to " + range.to);
+    return renderSheets(picture, plans, facts.length, $("title").value.trim() || autoTitle, "× " + range.from + " to " + range.to);
   }
 
   UI.start({
-    storeKey: "halloween-worksheets:v1",
-    fields: ["tables", "from", "to", "sheets", "title"],
+    storeKey: "color-by-number:v1",
+    fields: ["picture", "tables", "from", "to", "sheets", "title"],
     render,
     getExtra: () => ({ pos: readPos() }),
     applyExtra: (d) => { if (d.pos === "bottom" || d.pos === "mixed") $("pos-" + d.pos).checked = true; }
