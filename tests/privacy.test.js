@@ -11,8 +11,9 @@ const path = require("node:path");
 
 const root = path.join(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
-const PAGES = ["index.html", "division/index.html", "privacy/index.html"];
-const SCRIPTS = ["worksheet-core.js", "worksheet-ui.js"];
+const WORKSHEET_PAGES = ["index.html", "division/index.html", "halloween/index.html"];
+const PAGES = [...WORKSHEET_PAGES, "privacy/index.html"];
+const SCRIPTS = ["worksheet-core.js", "worksheet-ui.js", "halloween/color-by-number.js", "halloween/jack-o-lantern.js"];
 
 /** Inline <script> blocks of a page, so page code is checked like the shared scripts. */
 const inlineScripts = (html) => [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
@@ -58,7 +59,7 @@ test("no script makes a network call or touches cookies", () => {
 });
 
 test("the privacy page lists exactly the storage keys the pages use", () => {
-  const used = ["index.html", "division/index.html"].map((file) => {
+  const used = WORKSHEET_PAGES.map((file) => {
     const m = /storeKey:\s*"([^"]+)"/.exec(read(file));
     assert.ok(m, `${file} has a storeKey`);
     return m[1];
@@ -69,14 +70,15 @@ test("the privacy page lists exactly the storage keys the pages use", () => {
   // Storage happens in one place, the shared UI script's save and restore.
   const storageUses = (read("worksheet-ui.js").match(/localStorage/g) || []).length;
   assert.equal(storageUses, 2, "one write and one read");
-  for (const file of [...PAGES, "worksheet-core.js"]) {
+  for (const file of [...PAGES, ...SCRIPTS.filter((f) => f !== "worksheet-ui.js")]) {
     for (const js of file.endsWith(".js") ? [read(file)] : inlineScripts(read(file))) {
       assert.doesNotMatch(js, /localStorage|sessionStorage|indexedDB/, file);
     }
   }
 });
 
-test("both worksheet pages link to the privacy page", () => {
+test("every worksheet page links to the privacy page", () => {
   assert.match(read("index.html"), /<a href="privacy\/">Privacy and data<\/a>/);
   assert.match(read("division/index.html"), /<a href="\.\.\/privacy\/">Privacy and data<\/a>/);
+  assert.match(read("halloween/index.html"), /<a href="\.\.\/privacy\/">Privacy and data<\/a>/);
 });
