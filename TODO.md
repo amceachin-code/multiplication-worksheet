@@ -4,10 +4,10 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 
 ## Current state
 
-- `index.html` (times tables) and `division/index.html` share `worksheet.css`, `worksheet-core.js`, and `worksheet-ui.js`. No build step.
-- Both pages can print an answer key. With the Answer key switch on, key pages print after the worksheet pages, and a sheet code matches each key to its sheet.
+- `index.html` (times tables), `division/index.html`, and `halloween/index.html` (color by number) share `worksheet.css`, `worksheet-core.js`, and `worksheet-ui.js`. No build step. The Halloween picture comes from `tools/jack-o-lantern.js`, run by hand after changing the drawing.
+- All three pages can print an answer key. With the Answer key switch on, key pages print after the worksheet pages, and a sheet code matches each key to its sheet. The Halloween key is the finished picture, colored in.
 - Tested in headless Chrome: default settings (4s, ×1 to 10, 10×10) print on one letter page. 250 problems across 3 tables split onto 3 pages. Each fact appears equally often, with no back-to-back repeats.
-- Node tests live in three files: `tests/worksheet-core.test.js`, `tests/answer-key.test.js`, and `tests/privacy.test.js`.
+- Node tests live in four files: `tests/worksheet-core.test.js`, `tests/answer-key.test.js`, `tests/color-by-number.test.js`, and `tests/privacy.test.js`.
 - Fonts (Andika, Atkinson Hyperlegible) are served from `fonts/` on this site, with their licenses.
 - Live at https://www.andrew-mceachin.com/multiplication-worksheet/ (public repo `amceachin-code/multiplication-worksheet`, Pages from `main` root).
 - Link previews use `og-image.png`, a 1200x630 light-mode screenshot of the page. Regenerate it if the layout changes.
@@ -113,6 +113,19 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - [x] Fix the blank page between worksheets when the browser or printer adds its own margins.
 - [x] Leave room for iPhone Safari's print footer, so the last row stays on the page.
 - [ ] Print several worksheets on a real printer, from a computer and from a phone.
+
+## 11. Halloween color by number
+
+- [x] A jack-o'-lantern picture in 38 spaces, drawn by `tools/jack-o-lantern.js` (Node, nothing to install). Every space holds a 12 pt "99 × 99".
+- [x] Page `halloween/index.html`: times tables, range, First, Second, or Mixed, title, number of worksheets, and the answer key. Saved between visits under `halloween-worksheets:v1`.
+- [x] Color key: each answer goes with one color, by how many spaces each color has, and the key lists only the answers on the sheet.
+- [x] Answer key: the finished picture, painted, with each answer in bold. Read-back check of each worksheet and key.
+- [x] Node tests: 59 pass (18 new in `tests/color-by-number.test.js`, with 323 single-change mutations).
+- [x] Browser checks (10 settings, every label inside its space and off the lines, phone width, dark mode, 40 worksheets) and PDF read-back (problems, answers, key colors, and the color key, 7 sheets).
+- [x] Links from the other two pages, the privacy page, and a link preview image.
+- [ ] Merge to `main`, then check the live page with the key on.
+- [ ] Print a worksheet and key on a real printer, in color and in black and white, and from a phone.
+- [ ] Maybe add it to the Students & Guardians tools page in `academic-site`.
 
 ## Later, maybe
 

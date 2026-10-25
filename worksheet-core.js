@@ -1,6 +1,7 @@
 /*
- * Pure logic shared by the times table and division worksheet pages:
- * parsing, fact building, dealing, labels, and layout math.
+ * Pure logic shared by the worksheet pages (times tables, division, and the
+ * Halloween color-by-number page): parsing, fact building, dealing, labels,
+ * layout math, sheet codes, and the answer key checks.
  * No DOM here, so Node tests can load it (tests/worksheet-core.test.js).
  * In the browser it attaches to window.WorksheetCore; in Node it is module.exports.
  */
@@ -320,6 +321,11 @@
   function sheetCode(op, cols, rowsPerPage, problems) {
     let s = op + "|" + cols + "|" + rowsPerPage;
     for (const p of problems) s += "|" + p[0] + "," + p[1];
+    return codeFor(s);
+  }
+
+  /** Four characters from CODE_CHARS for any text, for sheet codes. */
+  function codeFor(s) {
     // FNV-1a: a small, well-mixed 32-bit string hash.
     let h = 0x811c9dc5;
     for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193);
@@ -433,8 +439,8 @@
   }
 
   return {
-    GRID_H, STACKED_SIZE, mulberry32, sheetSeeds, parseNumberList, multiplicationFacts, mixOrder, divisionFacts,
+    GRID_H, STACKED_SIZE, mulberry32, sheetSeeds, shuffle, parseNumberList, multiplicationFacts, mixOrder, divisionFacts,
     dealProblems, listLabel, longDivisionSize, horizontalSize, layout, maxColsFor, coverageText,
-    checkAnswer, readWhole, pageSlices, sheetCode, verifySheets
+    checkAnswer, readWhole, pageSlices, sheetCode, codeFor, verifySheets
   };
 });

@@ -1,6 +1,7 @@
 /*
- * Browser-side helpers shared by the times table and division worksheet pages:
- * small DOM builders, the sheet renderer, saved settings, and event wiring.
+ * Browser-side helpers shared by the worksheet pages: small DOM builders, the
+ * sheet header, the grid renderer (the times table and division pages; the
+ * Halloween page draws its own picture), saved settings, and event wiring.
  * Attaches to window.WorksheetUI. Needs worksheet-core.js loaded first.
  */
 (function () {
@@ -306,5 +307,8 @@
     run();
   }
 
-  window.WorksheetUI = { $, el, part, stackedProblem, setMsg, readRange, readGrid, readSheetCount, renderSheets, start };
+  window.WorksheetUI = {
+    $, el, part, stackedProblem, setMsg, readRange, readGrid, readSheetCount, sheetsText, buildHeader,
+    SHEET_FAILED, KEY_FAILED, renderSheets, start
+  };
 })();

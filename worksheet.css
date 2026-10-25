@@ -1,8 +1,9 @@
-/* Shared styles for the times table and division worksheet pages, including
-   the stacked problem both pages print, and the fonts and colors the privacy
+/* Shared styles for the worksheet pages, including the stacked problem the
+   times table and division pages print, and the fonts and colors the privacy
    page uses too. A page keeps only styles no other page uses inline: the
    one-line problem on the times table page, long division on the division
-   page, and the privacy page's reading column.
+   page, the color key and picture on the Halloween page, and the privacy
+   page's reading column.
 
    Layout: settings column on the left, letter-size paper preview on the right. Stacks on phones. */
 

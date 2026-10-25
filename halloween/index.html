@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halloween Color by Number</title>
+<!-- Link previews: group texts and class emails show this title, text, and image. OG URLs must be absolute. -->
+<meta name="description" content="Free printable Halloween color-by-number worksheets. Pick the times tables, then print. Students solve each problem and color a jack-o'-lantern by the answers. Nothing to sign up for, and nothing is collected.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Halloween Color by Number">
+<meta property="og:description" content="Free printable color-by-number worksheets. Pick the times tables, then print. Students color a jack-o'-lantern by the answers.">
+<meta property="og:url" content="https://www.andrew-mceachin.com/multiplication-worksheet/halloween/">
+<meta property="og:image" content="https://www.andrew-mceachin.com/multiplication-worksheet/halloween/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Inline SVG favicon: a pencil-yellow tile with a pumpkin, so there is no extra file to serve. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f5c13e'/%3E%3Cpath d='M16 11c0-2.5 1-4 3-5' fill='none' stroke='%232a2206' stroke-width='2.6' stroke-linecap='round'/%3E%3Cellipse cx='16' cy='19' rx='10.5' ry='8' fill='%23f5922a' stroke='%232a2206' stroke-width='2.2'/%3E%3Cpath d='M16 11.5v15' stroke='%232a2206' stroke-width='1.6'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../worksheet.css">
+<style>
+/* Page-only styles. Shared layout, panel, paper, and print rules are in
+   worksheet.css. Below the header, the color key (1.3 in), the gap, and the
+   picture (6.6 in) fill the 8.05 in the other pages give their grids. */
+
+/* The color key: one row per color, each on one line: a swatch, the color's
+   name, then its answers. Sizes in em follow the key's font size, which
+   ColorByNumber.keyFont picks so the longest row fits. Its KEY_LEAD_EM is the
+   swatch, name, and gaps set here. */
+.cbn-key {
+  flex: none;
+  height: calc(var(--in) * 1.3);
+  display: grid;
+  grid-auto-rows: 1fr;
+  align-items: center;
+  padding: 0 calc(var(--in) * 0.14);
+  border: calc(var(--in) * 0.014) solid var(--ink);
+  border-radius: calc(var(--in) * 0.08);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.cbn-row { display: flex; align-items: center; white-space: nowrap; line-height: 1.2; }
+.cbn-swatch { flex: none; width: 1.8em; height: 1.1em; margin-right: 0.5em; overflow: visible; }
+.cbn-swatch rect { stroke: var(--ink); stroke-width: 0.6px; }
+.cbn-name { flex: none; width: 4em; margin-right: 0.6em; font-weight: 700; }
+
+/* The picture, in hundredths of an inch (the SVG's units): the spaces, then
+   the lines (thick where the color changes, thin between spaces of one
+   color), then a label in each space, centered on its spot. The frame's line
+   is half outside the picture, so the SVG doesn't clip it. */
+.cbn-picture { display: block; flex: none; width: 100%; height: auto; overflow: visible; }
+.cbn-lines path { fill: none; stroke: var(--ink); stroke-linejoin: round; stroke-linecap: round; }
+.cbn-lines .outline { stroke-width: 2.8px; }
+.cbn-lines .inner { stroke-width: 1.6px; }
+.cbn-labels {
+  font-family: var(--font-sheet);
+  fill: var(--ink);
+  text-anchor: middle;
+  dominant-baseline: central;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+/* Answers on the key are bold, like the other pages' keys. */
+.cbn-labels [data-part="answer"] { font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="panel">
+    <div class="brand">
+      <h1>Halloween Color by Number</h1>
+      <p>Pick the times tables, then click Print worksheet. Students solve each problem, then color its space by the answer. The sheet updates as you type.</p>
+      <p class="cross-link"><a href="../">Times table worksheets</a> · <a href="../division/">Division worksheets</a> · <a href="https://www.andrew-mceachin.com/times-tables-games/">Practice online</a></p>
+    </div>
+
+    <form id="settings" novalidate>
+      <fieldset>
+        <legend>Facts</legend>
+        <label for="tables">Times tables
+          <!-- Full keyboard on phones: the digit pad has no comma, dash, or space. -->
+          <input id="tables" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="3" aria-describedby="tables-msg">
+        </label>
+        <span id="tables-msg" class="hint">One or more, like 4, or 3 4 6, or 2 to 5</span>
+        <div class="pair">
+          <label for="from">Multiply by, from
+            <input id="from" type="number" inputmode="numeric" min="0" max="99" value="1">
+          </label>
+          <label for="to">to
+            <input id="to" type="number" inputmode="numeric" min="0" max="99" value="10">
+          </label>
+        </div>
+        <span id="range-msg" class="err" hidden></span>
+        <span id="facts-msg" class="err" hidden></span>
+      </fieldset>
+
+      <fieldset>
+        <legend>Sheet</legend>
+        <span class="seg-caption" id="pos-label">Times-table number goes</span>
+        <div class="seg" role="radiogroup" aria-labelledby="pos-label">
+          <label><input type="radio" name="pos" id="pos-top" value="top" checked><span>First</span></label>
+          <label><input type="radio" name="pos" id="pos-bottom" value="bottom"><span>Second</span></label>
+          <label><input type="radio" name="pos" id="pos-mixed" value="mixed"><span>Mixed</span></label>
+        </div>
+        <label for="title">Title (optional)
+          <input id="title" type="text" autocomplete="off" placeholder="Color by Number: 3s">
+        </label>
+        <label for="sheets">How many worksheets
+          <input id="sheets" type="number" inputmode="numeric" min="1" max="40" value="1" aria-describedby="sheets-hint">
+        </label>
+        <span id="sheets-hint" class="hint">Each one has its own problems, color key, and Name and Date line.</span>
+        <span id="sheets-msg" class="err" hidden></span>
+        <!-- Not saved between visits, so nobody prints a key by accident. -->
+        <label class="switch" for="answer-key">
+          <input id="answer-key" type="checkbox" role="switch" autocomplete="off" aria-describedby="answer-key-hint">
+          <span>Answer key</span>
+        </label>
+        <span id="answer-key-hint" class="hint">The key is the finished picture, with each answer in its space. Print one-sided, or the key lands on the back of the worksheet.</span>
+      </fieldset>
+    </form>
+
+    <p class="summary" id="summary" aria-live="polite"></p>
+
+    <div class="actions">
+      <button type="button" class="btn-print" id="print">Print worksheet</button>
+      <button type="button" class="btn-shuffle" id="shuffle">Shuffle again</button>
+      <p class="print-note">Prints on letter paper: the worksheets, then their answer keys if the switch is on. Each shuffle makes new problems and a new color key for every worksheet.</p>
+    </div>
+
+    <p class="panel-footer"><a href="../privacy/">Privacy and data</a></p>
+  </aside>
+
+  <main class="preview" id="preview" aria-label="Worksheet preview"></main>
+</div>
+
+<script src="../worksheet-core.js"></script>
+<script src="../worksheet-ui.js"></script>
+<script src="jack-o-lantern.js"></script>
+<script src="color-by-number.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // Shared logic lives in worksheet-core.js (pure) and worksheet-ui.js (DOM).
+  // This page's own logic is in color-by-number.js (pure), and its picture,
+  // drawn by tools/jack-o-lantern.js, in jack-o-lantern.js.
+  const C = window.WorksheetCore, UI = window.WorksheetUI, K = window.ColorByNumber, $ = UI.$;
+  const PICTURE = window.JackOLantern;
+  const COLORS = K.pictureColors(PICTURE);
+  const TABLES_HINT = "One or more, like 4, or 3 4 6, or 2 to 5";
+  const TABLES_ERRORS = {
+    empty: "Enter at least one times table, like 4.",
+    format: "Use whole numbers from 0 to 99, like 4, or 3 4 6, or 2 to 5."
+  };
+  // Labels are PICTURE.labelPt points, in the picture's hundredths of an inch,
+  // with the same air on each side of × as the times table page's one-line problems.
+  const LABEL_SIZE = (PICTURE.labelPt * 100) / 72;
+  const SIGN_PAD = (0.22 * LABEL_SIZE).toFixed(2);
+
+  /** Where the table number goes: "top" (first), "bottom" (second), or "mixed". */
+  const readPos = () => ["top", "bottom", "mixed"].find((v) => $("pos-" + v).checked) || "top";
+
+  /** An SVG element with the given attributes. */
+  function svgEl(tag, attrs = {}) {
+    const n = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    return n;
+  }
+
+  /**
+   * The color key: for each color, its swatch, its name, and the answers that
+   * get it. data-color and data-answer mark the pieces the check reads back.
+   */
+  function buildKey(rows) {
+    const box = UI.el("div", "cbn-key");
+    box.setAttribute("translate", "no");   // browser translation must not rewrite the numbers
+    box.style.fontSize = "calc(var(--in) * " + (K.keyFont(rows) / 72).toFixed(4) + ")";
+    for (const row of rows) {
+      const c = K.PALETTE.find((p) => p.color === row.color);
+      const line = UI.el("div", "cbn-row");
+      line.dataset.color = c.color;
+      const swatch = svgEl("svg", { class: "cbn-swatch", viewBox: "0 0 18 11", "aria-hidden": "true" });
+      swatch.append(svgEl("rect", { x: 0.3, y: 0.3, width: 17.4, height: 10.4, rx: 2, fill: c.fill }));
+      const answers = UI.el("span");
+      row.answers.forEach((a, i) => {
+        if (i) answers.append(", ");
+        const n = UI.el("span", "", String(a));
+        n.dataset.answer = "";
+        answers.append(n);
+      });
+      line.append(swatch, UI.el("span", "cbn-name", c.name), answers);
+      box.append(line);
+    }
+    return box;
+  }
+
+  /**
+   * The picture, with a label in every space: its problem on the worksheet,
+   * or its answer on the answer key, whose spaces are painted their colors.
+   * showAnswers must be exactly true, so a stray argument can't leak answers
+   * onto a worksheet. data-part marks each piece of a label, so the check can
+   * read it back, as on the other pages.
+   */
+  function buildPicture(problems, showAnswers) {
+    const key = showAnswers === true;
+    const fill = new Map(COLORS.map((c) => [c.color, c.fill]));
+    // translate="no": browser translation must not rewrite the numbers.
+    const svg = svgEl("svg", {
+      class: "cbn-picture", viewBox: "0 0 " + PICTURE.width + " " + PICTURE.height, role: "img", translate: "no",
+      "aria-label": "A jack-o'-lantern picture with " + PICTURE.regions.length + " spaces to color" + (key ? ", colored in" : "")
+    });
+    const spaces = svgEl("g", { class: "cbn-spaces" });
+    const lines = svgEl("g", { class: "cbn-lines" });
+    const labels = svgEl("g", { class: "cbn-labels", "font-size": LABEL_SIZE.toFixed(3) });
+    const part = (name, text, attrs) => {
+      const n = svgEl("tspan", Object.assign({ "data-part": name }, attrs));
+      n.textContent = text;
+      return n;
+    };
+    PICTURE.regions.forEach((r, i) => {
+      spaces.append(svgEl("path", { "data-region": r.id, d: r.d, fill: key ? fill.get(r.color) : K.BLANK, "fill-rule": "evenodd" }));
+      const label = svgEl("text", { "data-region": r.id, x: String(r.x), y: String(r.y) });
+      const [a, b, product] = problems[i];
+      if (key) label.append(part("answer", String(product)));
+      else label.append(part("a", String(a)), part("sign", "×", { dx: SIGN_PAD }), part("b", String(b), { dx: SIGN_PAD }));
+      labels.append(label);
+    });
+    lines.append(svgEl("path", { class: "outline", d: PICTURE.outline }), svgEl("path", { class: "inner", d: PICTURE.inner }));
+    svg.append(spaces, lines, labels);
+    return svg;
+  }
+
+  /**
+   * Read one built page back as plain text for ColorByNumber.verifySheet: its
+   * sheet code, its color key, and its picture's lines, spaces, and labels.
+   * It reads every child of each part, so anything stray there fails the check.
+   */
+  function readPage(wrap) {
+    const kids = (selector) => {
+      const n = wrap.querySelector(selector);
+      return n ? [...n.children] : [];
+    };
+    const text = (n) => (n ? n.textContent : null);
+    return {
+      codes: [...wrap.querySelectorAll("[data-code]")].map((n) => n.textContent),
+      key: kids(".cbn-key").map((row) => ({
+        color: row.dataset.color,
+        name: text(row.querySelector(".cbn-name")),
+        swatch: row.querySelector("rect") ? row.querySelector("rect").getAttribute("fill") : null,
+        text: row.textContent,
+        answers: [...row.querySelectorAll("[data-answer]")].map((n) => n.textContent)
+      })),
+      lines: kids(".cbn-lines").map((n) => n.getAttribute("d")),
+      spaces: kids(".cbn-spaces").map((n) => ({ id: n.getAttribute("data-region"), d: n.getAttribute("d"), fill: n.getAttribute("fill") })),
+      labels: kids(".cbn-labels").map((n) => ({
+        id: n.getAttribute("data-region"), x: n.getAttribute("x"), y: n.getAttribute("y"), text: n.textContent,
+        parts: [...n.querySelectorAll("[data-part]")].map((p) => [p.getAttribute("data-part"), p.textContent])
+      }))
+    };
+  }
+
+  /**
+   * Draw every worksheet, then the answer keys when the Answer key switch is
+   * on: all the worksheets first, then their keys in the same order. Pages are
+   * built off screen, read back, and checked with ColorByNumber.verifySheet,
+   * each key against its own worksheet. Only pages that pass go on screen, all
+   * in one step, so no print path (the button, Cmd+P, the browser menu) can
+   * reach a page that wasn't confirmed. Works like WorksheetUI.renderSheets.
+   * Returns "ok", or "failed" when a check failed (the summary says so).
+   */
+  function renderSheets(plans, factCount, title, rangeText) {
+    const withKey = $("answer-key").checked;
+    const count = plans.length;
+    const meta = rangeText + "  ·  " + PICTURE.regions.length + " problems";
+
+    function buildPage(plan, s, code, isKey) {
+      const wrap = UI.el("section", "sheet-wrap");
+      // Preview-only label above the page (print hides it; CSS sets it in capitals).
+      const which = count > 1 ? " " + (s + 1) + " of " + count : "";
+      if (withKey || count > 1) wrap.append(UI.el("p", "page-label", (isKey ? "Answer key" : "Worksheet") + which));
+      const paper = UI.el("div", "paper");
+      paper.append(UI.buildHeader(title, meta, code, isKey), buildKey(plan.key), buildPicture(plan.printed, isKey));
+      wrap.append(paper);
+      return wrap;
+    }
+
+    // The worksheets first. If any fails its check, show nothing at all.
+    let built;
+    try {
+      built = plans.map((plan, s) => {
+        const code = K.sheetCode(PICTURE, plan.printed, plan.key);
+        const wrap = buildPage(plan, s, code, false);
+        const read = readPage(wrap);
+        K.verifySheet(PICTURE, read, null);
+        return { plan, code, wrap, read };
+      });
+    } catch (e) {
+      console.error("Worksheet check failed:", e);
+      $("preview").replaceChildren();
+      $("summary").textContent = UI.SHEET_FAILED;
+      return "failed";
+    }
+    const sheetWraps = built.map((b) => b.wrap);
+
+    // Then the keys, each checked against its worksheet as it was read back.
+    // If any fails, the worksheets still show and no key does.
+    let keyWraps = [];
+    if (withKey) {
+      try {
+        keyWraps = built.map((b, s) => {
+          const wrap = buildPage(b.plan, s, b.code, true);
+          K.verifySheet(PICTURE, b.read, readPage(wrap));
+          return wrap;
+        });
+      } catch (e) {
+        console.error("Answer key check failed:", e);
+        $("preview").replaceChildren(...sheetWraps);
+        $("summary").textContent = UI.KEY_FAILED;
+        return "failed";
+      }
+    }
+    $("preview").replaceChildren(...sheetWraps, ...keyWraps);
+
+    const pagesText = withKey
+      ? " Fills " + count + (count === 1 ? " page" : " pages") + ", plus " + count + " for the answer " + (count === 1 ? "key." : "keys.")
+      : count > 1 ? " Fills " + count + " pages." : "";
+    $("summary").replaceChildren(
+      ...(count > 1 ? [UI.el("strong", "", UI.sheetsText(count)), document.createTextNode(", each with ")] : []),
+      UI.el("strong", "", PICTURE.regions.length + " problems"), document.createTextNode(" from "),
+      UI.el("strong", "", factCount + (factCount === 1 ? " fact" : " facts")),
+      document.createTextNode(", in " + COLORS.length + " colors. " + K.coverageText(plans.map((p) => p.problems), factCount) + pagesText)
+    );
+    return "ok";
+  }
+
+  function render(seed) {
+    // Check every field first so all errors show at once.
+    const parsed = C.parseNumberList($("tables").value, 0);
+    UI.setMsg($("tables-msg"), parsed.error ? TABLES_ERRORS[parsed.error] : TABLES_HINT, !!parsed.error, [$("tables")]);
+    const range = UI.readRange();
+    const count = UI.readSheetCount();
+    const tables = parsed.error || !range ? null : parsed.numbers;
+    // Mixed builds the facts table-first, then flips half of them once planned.
+    const pos = readPos();
+    const facts = tables && C.multiplicationFacts(tables, range.from, range.to, pos !== "bottom");
+    // Each color needs answers of its own, so the facts need as many different
+    // answers as the picture has colors. The 0s alone have just one.
+    const answers = facts ? new Set(facts.map((f) => f[2])).size : 0;
+    const tooFew = !!facts && answers < COLORS.length;
+    UI.setMsg($("facts-msg"), tooFew ? "These facts have only " + answers + (answers === 1 ? " answer" : " different answers") +
+      ", and the picture needs " + COLORS.length + ", one for each color. Add a times table or widen the range." : "",
+      tooFew, tooFew ? [$("tables"), $("from"), $("to")] : []);
+    if (!facts || tooFew || !count) return "invalid";
+
+    // Each worksheet plans from its own seed. One generator for both steps, so
+    // switching to Mixed keeps the problems and only flips half of them.
+    const plans = C.sheetSeeds(seed, count).map((s) => {
+      const rand = C.mulberry32(s);
+      const plan = K.planSheet(PICTURE, facts, rand);
+      return Object.assign(plan, { printed: pos === "mixed" ? C.mixOrder(plan.problems, rand) : plan.problems });
+    });
+
+    const autoTitle = "Color by Number: " + C.listLabel(tables, "s");
+    $("title").placeholder = autoTitle;
+    return renderSheets(plans, facts.length, $("title").value.trim() || autoTitle, "× " + range.from + " to " + range.to);
+  }
+
+  UI.start({
+    storeKey: "halloween-worksheets:v1",
+    fields: ["tables", "from", "to", "sheets", "title"],
+    render,
+    getExtra: () => ({ pos: readPos() }),
+    applyExtra: (d) => { if (d.pos === "bottom" || d.pos === "mixed") $("pos-" + d.pos).checked = true; }
+  });
+})();
+</script>
+</body>
+</html>
