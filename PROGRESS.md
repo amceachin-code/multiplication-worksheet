@@ -1,5 +1,31 @@
 # Progress
 
+## 2026-10-26 (Practice online in division)
+
+### Changes
+
+- Slice D of the division plan in `amceachin-code/times-tables-games` (`plans/21-division.md`), done once division was live there. It follows `amceachin-code/times-tables-games#21`, "Division facts", which closed when slice C went live.
+- The division page's "Practice online" link now opens Times Tables Games in division, on the sheet's divisors and answers: `https://www.andrew-mceachin.com/times-tables-games/#/?op=div&t=4&from=1&to=10`. The app takes the same answers (0 to 99) but divisors only up to 20. With a bigger divisor in the list it quietly uses the child's own tables, so then the link opens division alone (`#/?op=div`).
+- New `WorksheetCore.divisionPracticeLink(divisors, from, to)` builds the link. Each drawn sheet sets it, beside the title placeholder. In the HTML the link starts as division alone, so it opens division before the script runs and when saved settings can't draw a sheet. While a setting needs fixing, the link keeps the last good sheet's numbers, like the dimmed sheet.
+- The times table and Color by Number pages still link to the app's home.
+- Tests: 63 Node tests pass (was 60). New `tests/practice-link.test.js` (3 tests): the link for one divisor, a list, and all 20 divisors with answers 0 to 99, each left as it is by the browser's address parsing; division alone for a divisor over 20 or none; and on the page, the link starts as division alone and each drawn sheet sets it. Checked that the tests fail on a cap of 19 or 21, a space between divisors, a missing range or `op=div`, a missing call on the page, and the old link.
+- Browser check (headless Chromium, both sites served at their real addresses): the link follows the divisors and range, stays put for the layout and grid, keeps the last good numbers while a setting needs fixing, and is division alone for 2 to 21, for 25, and with an unreadable saved setting. Followed from the page, the app opened in division with the sheet's tables picked: 7 with answers 1 to 10, and 3, 4, and 6 with answers 0 to 12 (Other, 0 and 12). 25 opened division on the child's own tables. No console errors, and every request stayed on the site.
+- Privacy: the divisors and range ride after the # in the link, which browsers don't send to the server, so the privacy page is unchanged.
+
+### Decisions
+
+- The link is built in `worksheet-core.js`, not the page, so Node can test it.
+- `from` and `to` always go in the link, even when they are the app's defaults (1 to 10), so the link means the same thing if those defaults change.
+- With a divisor over 20, the link carries nothing from the sheet, as the plan said, rather than the divisors the app takes. Those would be other facts than the sheet's.
+
+### Files touched
+
+- `division/index.html`, `worksheet-core.js`, `tests/practice-link.test.js` (new), `README.md`, `TODO.md`, `PROGRESS.md`
+
+### Next steps
+
+- Merge, then check the live division page's link opens the app on the sheet's divisors.
+
 ## 2026-10-25 (color by number)
 
 ### Changes

@@ -7,7 +7,7 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - `index.html` (times tables), `division/index.html`, and `color-by-number/index.html` share `worksheet.css`, `worksheet-core.js`, and `worksheet-ui.js`. No build step. Each Color by Number picture comes from a drawing in `tools/color-by-number/`, run by hand after changing it.
 - All three pages can print an answer key. With the Answer key switch on, key pages print after the worksheet pages, and a sheet code matches each key to its sheet. The Color by Number key is the finished picture, colored in.
 - Tested in headless Chrome: default settings (4s, ×1 to 10, 10×10) print on one letter page. 250 problems across 3 tables split onto 3 pages. Each fact appears equally often, with no back-to-back repeats.
-- Node tests live in four files: `tests/worksheet-core.test.js`, `tests/answer-key.test.js`, `tests/color-by-number.test.js`, and `tests/privacy.test.js`.
+- Node tests live in five files: `tests/worksheet-core.test.js`, `tests/answer-key.test.js`, `tests/color-by-number.test.js`, `tests/privacy.test.js`, and `tests/practice-link.test.js`.
 - Fonts (Andika, Atkinson Hyperlegible) are served from `fonts/` on this site, with their licenses.
 - Live at https://www.andrew-mceachin.com/multiplication-worksheet/ (public repo `amceachin-code/multiplication-worksheet`, Pages from `main` root).
 - Link previews use `og-image.png`, a 1200x630 light-mode screenshot of the page. Regenerate it if the layout changes.
@@ -130,6 +130,13 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - [x] Print a worksheet on a real printer. It printed well.
 - [ ] Print the answer key, print in black and white, and print from a phone.
 - [ ] More pictures.
+
+## 12. Practice online in division
+
+- [x] The division page's Practice online link opens Times Tables Games in division, on the sheet's divisors and answers (`#/?op=div&t=4&from=1&to=10`). With a divisor over 20, which the app doesn't take, it opens division alone. Follows `amceachin-code/times-tables-games#21`.
+- [x] Node tests: 63 pass (3 in `tests/practice-link.test.js`).
+- [x] Browser check: the link follows the settings, and the app opens on the sheet's divisors and answers.
+- [ ] Merge, then check the live division page's link opens the app on the sheet's divisors.
 
 ## Later, maybe
 

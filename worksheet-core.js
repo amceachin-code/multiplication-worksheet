@@ -1,7 +1,8 @@
 /*
  * Pure logic shared by the worksheet pages (times tables, division, and
  * Color by Number): parsing, fact building, dealing, labels,
- * layout math, sheet codes, and the answer key checks.
+ * layout math, the division page's link into Times Tables Games, sheet codes,
+ * and the answer key checks.
  * No DOM here, so Node tests can load it (tests/worksheet-core.test.js).
  * In the browser it attaches to window.WorksheetCore; in Node it is module.exports.
  */
@@ -261,6 +262,26 @@
     return "Each fact appears " + each + " or " + (each + 1) + " times.";
   }
 
+  // Times Tables Games, the companion practice app on this site, and the
+  // biggest table it takes (a divisor, in division).
+  const GAMES_URL = "https://www.andrew-mceachin.com/times-tables-games/";
+  const GAMES_MAX_TABLE = 20;
+
+  /**
+   * The division page's "Practice online" link: Times Tables Games in
+   * division, on the sheet's divisors and answers, like
+   * GAMES_URL + "#/?op=div&t=4&from=1&to=10". The arguments are the page's
+   * checked settings. The app takes the same answers, 0 to 99, but divisors
+   * only up to 20, and with a bigger one in the list it quietly uses the
+   * child's own tables instead. So then, or with no divisors, the link opens
+   * division alone and carries nothing from the sheet.
+   */
+  function divisionPracticeLink(divisors, from, to) {
+    const link = GAMES_URL + "#/?op=div";
+    if (!divisors.length || divisors.some((d) => d > GAMES_MAX_TABLE)) return link;
+    return link + "&t=" + divisors.join(",") + "&from=" + from + "&to=" + to;
+  }
+
   /*
    * ---------- Answer key checks ----------
    * The answer key must never be wrong. Answers are made once, with their facts,
@@ -440,7 +461,7 @@
 
   return {
     GRID_H, STACKED_SIZE, mulberry32, sheetSeeds, shuffle, parseNumberList, multiplicationFacts, mixOrder, divisionFacts,
-    dealProblems, listLabel, longDivisionSize, horizontalSize, layout, maxColsFor, coverageText,
+    dealProblems, listLabel, longDivisionSize, horizontalSize, layout, maxColsFor, coverageText, divisionPracticeLink,
     checkAnswer, readWhole, pageSlices, sheetCode, codeFor, verifySheets
   };
 });

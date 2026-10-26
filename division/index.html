@@ -90,7 +90,8 @@
     <div class="brand">
       <h1>Division Worksheets</h1>
       <p>Pick the numbers to divide by, then click Print worksheet. The sheet updates as you type.</p>
-      <p class="cross-link"><a href="../">Times table worksheets</a> · <a href="../color-by-number/">Color by number</a> · <a href="https://www.andrew-mceachin.com/times-tables-games/">Practice online</a></p>
+      <!-- Practice online opens Times Tables Games in division. Each drawn sheet adds its divisors and answers. -->
+      <p class="cross-link"><a href="../">Times table worksheets</a> · <a href="../color-by-number/">Color by number</a> · <a id="practice-link" href="https://www.andrew-mceachin.com/times-tables-games/#/?op=div">Practice online</a></p>
     </div>
 
     <form id="settings" novalidate>
@@ -229,6 +230,7 @@
 
     const autoTitle = "Dividing by " + C.listLabel(divisors, "");
     $("title").placeholder = autoTitle;
+    $("practice-link").href = C.divisionPracticeLink(divisors, range.from, range.to);
     return UI.renderSheets({
       op: "÷", format, worksheets, factCount: facts.length, cols: grid.cols, rows: grid.rows,
       layout: C.layout(grid.cols, grid.rows, size),
