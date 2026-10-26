@@ -124,9 +124,11 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - [x] Node tests: 60 pass (19 in `tests/color-by-number.test.js`, with 323 single-change mutations).
 - [x] Browser checks (10 settings, every label inside its space and off the lines, a second picture in the menu, phone width, dark mode, 40 worksheets) and PDF read-back (problems, answers, key colors, and the color key, 7 sheets).
 - [x] Links from the other two pages, the privacy page, and a link preview image.
-- [x] Listed on the Students & Guardians page, under Math Worksheets, on a branch of `amceachin-code.github.io`.
-- [ ] Merge this repo's branch to `main` first, then the website's, so the tools page never links to a page that isn't live yet. Then check both live pages.
-- [ ] Print a worksheet and key on a real printer, in color and in black and white, and from a phone.
+- [x] Listed on the Students & Guardians page, under Math Worksheets (in `amceachin-code.github.io`).
+- [x] Merge this repo's branch to `main` first, then the website's, so the tools page never links to a page that isn't live yet. Both merged, and both deploys succeeded.
+- [ ] Check the Color by Number link on the live tools page.
+- [x] Print a worksheet on a real printer. It printed well.
+- [ ] Print the answer key, print in black and white, and print from a phone.
 - [ ] More pictures.
 
 ## Later, maybe
