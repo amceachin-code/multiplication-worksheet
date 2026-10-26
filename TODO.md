@@ -126,7 +126,7 @@ Goal: publish this page on GitHub Pages so families in my son's class can use it
 - [x] Links from the other two pages, the privacy page, and a link preview image.
 - [x] Listed on the Students & Guardians page, under Math Worksheets (in `amceachin-code.github.io`).
 - [x] Merge this repo's branch to `main` first, then the website's, so the tools page never links to a page that isn't live yet. Both merged, and both deploys succeeded.
-- [ ] Check the Color by Number link on the live tools page.
+- [x] Check the Color by Number link on the live tools page. It works.
 - [x] Print a worksheet on a real printer. It printed well.
 - [ ] Print the answer key, print in black and white, and print from a phone.
 - [ ] More pictures.
