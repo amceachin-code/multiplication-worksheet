@@ -85,3 +85,15 @@ test("every worksheet page links to the privacy page", () => {
   assert.match(read("division/index.html"), /<a href="\.\.\/privacy\/">Privacy and data<\/a>/);
   assert.match(read("color-by-number/index.html"), /<a href="\.\.\/privacy\/">Privacy and data<\/a>/);
 });
+
+test("no page, script, or note names the old host: the worksheets moved to worksheets.hearthandwit.com in November 2026", () => {
+  // The old address still works, by GitHub's redirect, but nothing a visitor loads may send them back to it.
+  // (The README may name it as history, and still points at the personal site's own tools page.)
+  for (const file of [...PAGES, ...SCRIPTS, "CNAME"]) {
+    assert.doesNotMatch(read(file), /andrew-mceachin\.com/, file);
+  }
+  assert.equal(read("CNAME").trim(), "worksheets.hearthandwit.com", "the custom domain GitHub Pages serves from");
+  for (const file of PAGES) {
+    assert.match(read(file), /<meta property="og:url" content="https:\/\/worksheets\.hearthandwit\.com\//, file + ": its own address in the link preview");
+  }
+});
