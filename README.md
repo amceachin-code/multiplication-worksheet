@@ -1,14 +1,14 @@
 # Times Table Worksheets
 
-**Use it online:** https://www.andrew-mceachin.com/multiplication-worksheet/
+**Use it online:** https://worksheets.hearthandwit.com/
 
 A one-page web app that builds printable multiplication worksheets.
 
-**Division worksheets:** https://www.andrew-mceachin.com/multiplication-worksheet/division/
+**Division worksheets:** https://worksheets.hearthandwit.com/division/
 
 A partner page in `division/` builds division sheets the same way. Problems can be stacked like the times table sheet or set up as long division, and every answer is a whole number.
 
-**Color by number:** https://www.andrew-mceachin.com/multiplication-worksheet/color-by-number/
+**Color by number:** https://worksheets.hearthandwit.com/color-by-number/
 
 A third page in `color-by-number/` turns times table practice into pictures to color. Students solve the problem in each space, find the answer in the color key, and color the space. The page has a Picture menu. A jack-o'-lantern is the first picture, and more can be added, holiday or not.
 
@@ -43,7 +43,7 @@ A third page in `color-by-number/` turns times table practice into pictures to c
 - Long division shows the divisor, then a bracket with a bar over the dividend, and the answer goes above the bar. The dividend sits right after the bracket, and the bar is as long as the number under it. It shows the same facts a different way, so there are no remainders here either.
 - Problems per row go up to 10, so 10 rows of 10 (100 problems) fit on one letter page in either layout. Long division with very wide numbers (4-digit dividends, like 9801 ÷ 99) allows up to 9 per row, so the type stays at 11 pt or more. The default is 4 per row by 10 rows.
 - Settings, including the layout, are stored under their own key, separate from the times table page.
-- The **Practice online** link opens Times Tables Games in division, on the sheet's divisors and answers, like `https://www.andrew-mceachin.com/times-tables-games/#/?op=div&t=4&from=1&to=10`. The app takes divisors only up to 20, so with a bigger one on the sheet the link opens division alone, on the child's own tables. While a setting needs fixing, the link keeps the last good sheet's numbers.
+- The **Practice online** link opens Times Tables Games in division, on the sheet's divisors and answers, like `https://timestables.hearthandwit.com/#/?op=div&t=4&from=1&to=10`. The app takes divisors only up to 20, so with a bigger one on the sheet the link opens division alone, on the child's own tables. While a setting needs fixing, the link keeps the last good sheet's numbers.
 
 ## Color by Number page
 
@@ -95,8 +95,8 @@ How the key stays right:
 - The pages collect nothing. There are no accounts, sign-ins, cookies, ads, analytics, or tracking, and no forms. The tool never asks for names or other personal details: Name and Date are blank lines on the paper.
 - Settings are saved only in the visitor's own browser (localStorage). The Answer key switch is never saved.
 - The pages load everything, fonts included, from this site. They contact no other site.
-- The privacy page has a short version for teachers and families and a longer one for district admin and IT staff: https://www.andrew-mceachin.com/multiplication-worksheet/privacy/ (the file is `privacy/index.html`). All three worksheet pages link to it at the bottom of the settings panel.
-- For Clever, add the tool as a plain link or bookmark in the Clever Portal. It needs no SSO, rostering, or LTI. A web filter only needs to allow www.andrew-mceachin.com.
+- The privacy page has a short version for teachers and families and a longer one for district admin and IT staff: https://worksheets.hearthandwit.com/privacy/ (the file is `privacy/index.html`). All three worksheet pages link to it at the bottom of the settings panel.
+- For Clever, add the tool as a plain link or bookmark in the Clever Portal. It needs no SSO, rostering, or LTI. A web filter only needs to allow worksheets.hearthandwit.com.
 
 ## Files
 
@@ -129,7 +129,7 @@ Run the 63 tests (Node 18 or later, nothing to install): `node --test tests/*.te
 ## Hosting
 
 - GitHub Pages serves the site from `main`, root folder.
-- It lives at https://www.andrew-mceachin.com/multiplication-worksheet/ because the user site (`amceachin-code.github.io`) carries that custom domain. Old github.io links redirect there.
+- It lives at https://worksheets.hearthandwit.com/, the repository's custom domain (the `CNAME` file), since November 2026. Before that it was at www.andrew-mceachin.com/multiplication-worksheet/, under the user site's domain; GitHub redirects every old address, page by page, to the new one, and old github.io links redirect too.
 - The Students & Guardians page lists all three worksheet pages in its Math Worksheets section: https://www.andrew-mceachin.com/tools/ (the file is `site/content/tools/_index.md` in `amceachin-code/amceachin-code.github.io`).
-- All three worksheet pages link to the companion practice app, Times Tables Games, at https://www.andrew-mceachin.com/times-tables-games/ (its own repo, `amceachin-code/times-tables-games`). The division page's link opens it in division, on the sheet's divisors and answers (see "Division page").
+- All three worksheet pages link to the companion practice app, Times Tables Games, at https://timestables.hearthandwit.com/ (its own repo, `amceachin-code/timestables`). The division page's link opens it in division, on the sheet's divisors and answers (see "Division page").
 - `og-image.png`, `division/og-image.png`, and `color-by-number/og-image.png` are the link preview images, 1200x630 light-mode screenshots. The Color by Number one shows the answer key's colored picture. Regenerate them when the page design changes.

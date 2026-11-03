@@ -8,7 +8,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const C = require("../worksheet-core.js");
 
-const GAMES = "https://www.andrew-mceachin.com/times-tables-games/";
+const GAMES = "https://timestables.hearthandwit.com/";
 const range = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => from + i);
 
 test("divisionPracticeLink carries the sheet's divisors and answers", () => {

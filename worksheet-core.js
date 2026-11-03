@@ -264,7 +264,7 @@
 
   // Times Tables Games, the companion practice app on this site, and the
   // biggest table it takes (a divisor, in division).
-  const GAMES_URL = "https://www.andrew-mceachin.com/times-tables-games/";
+  const GAMES_URL = "https://timestables.hearthandwit.com/";
   const GAMES_MAX_TABLE = 20;
 
   /**
