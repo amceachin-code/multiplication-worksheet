@@ -1,5 +1,24 @@
 # Progress
 
+## 2026-11-06 (Worksheets favicon)
+
+### Changes
+
+- All four pages (times tables, division, Color by Number, privacy) now use one favicon: the worksheets mark drawn for the Hearth and Wit apps page, an answer-key red (#B3261E) tile holding a cream sheet with a red check. Before, each page had its own pencil-yellow tile, and the times table page's yellow tile with a times sign was the same icon Times Tables Games uses.
+- The favicon is a tab-size cut of the full mark. The full mark also has a times sign and an answer blank, but at 16 px their strokes would be under 1 px, so the tab icon keeps only the sheet and a heavier check (4 units in a 32 unit box).
+- It stays an inline `data:` URI in each page, encoded as before, so there is still no extra request.
+- Tests: 64 Node tests pass. No test pins the favicon.
+- Browser check (headless Chromium): candidates drawn at 16, 32, and 64 px on light and dark tab strips; the sheet with a check read best at 16. Each page loads the new icon, all four are the same, and there are no console errors.
+
+### Decisions
+
+- The sheet with a check rather than the sheet with a times sign: alone on a sheet, a times sign looks like a close button.
+- One icon for the whole site, as one brand mark, in place of the four per-page icons.
+
+### Files touched
+
+- `index.html`, `division/index.html`, `color-by-number/index.html`, `privacy/index.html`, `PROGRESS.md`
+
 ## 2026-10-26 (Practice online in division)
 
 ### Changes
